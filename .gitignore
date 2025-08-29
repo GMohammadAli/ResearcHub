@@ -1,0 +1,6 @@
+*.md
+ai-summarizer-bot-v2.png
+
+*/.env
+*/node_modules
+*/package-lock.json
