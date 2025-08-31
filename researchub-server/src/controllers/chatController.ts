@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { readDocument, SupportedFileType } from "../services/documentService";
-import { DocumentModel, IDocument } from "../models/document";
+import { DocumentModel } from "../models/Document";
+import ApiService from "../services/apiService";
 
 const uploadFile = async (req: Request, res: Response) => {
   try {
@@ -37,6 +38,60 @@ const uploadFile = async (req: Request, res: Response) => {
   }
 };
 
+const getDocumentSummary = async (req: Request, res: Response) => {
+  const { docId } = req.params;
+  if (!docId)
+    return res.status(400).json({
+      message: "Bad Request",
+    });
+
+  try {
+    const response = await ApiService.get(`/summarize/${docId}`);
+    res.status(response.data.status || 200).json(response.data);
+  } catch (error: any) {
+    console.error(
+      `Error while fetching document summary for docId: ${docId}`,
+      error
+    );
+    res.status(500).json({
+      error: "Proxy error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
+const getAnswerToQuestions = async (req: Request, res: Response) => {
+  const { docId } = req.params;
+  const { question } = req.query;
+  if (
+    !docId ||
+    typeof docId !== "string" ||
+    !question ||
+    typeof question !== "string"
+  )
+    return res.status(400).json({
+      message: "Bad Request",
+    });
+
+  try {
+    const response = await ApiService.post(
+      `/summarize/${docId}/?question=${question}`
+    );
+    res.status(response.data.status || 200).json(response.data);
+  } catch (error: any) {
+    console.error(
+      `Error while fetching answer for question: ${question}`,
+      error
+    );
+    res.status(500).json({
+      error: "Proxy error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
 export default {
   uploadFile,
+  getDocumentSummary,
+  getAnswerToQuestions,
 };

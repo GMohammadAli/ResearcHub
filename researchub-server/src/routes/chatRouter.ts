@@ -19,4 +19,8 @@ router.post(
   chatController.uploadFile
 );
 
+router.get("/documents/:docId/summary", chatController.getDocumentSummary);
+
+router.get("/documents/:docId", chatController.getAnswerToQuestions);
+
 export default router;
