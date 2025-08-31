@@ -33,42 +33,41 @@ const UploadFile = () => {
   };
 
   useEffect(() => {
+    //TODO -> Provide user with a button to click on when upload successful like Summarize document
     if (uploadResponse?.success) navigate(`/chat/${uploadResponse.documentId}`);
   }, [uploadResponse, navigate]);
 
   return (
-    <ContentWrapper>
-      <div className="upload-file-container">
-        <h1>Ask ResearcHub</h1>
-        <p>
-          Easily upload PDFs, docs, or text files, and get AI-powered answers to
-          your questions.
-        </p>
+    <ContentWrapper containerClass={"upload-file-container"}>
+      <h1>Ask ResearcHub</h1>
+      <p>
+        Easily upload PDFs, docs, or text files, and get AI-powered answers to
+        your questions.
+      </p>
 
-        <div
-          id={`dropZone ${isDragOver ? "drag-over" : ""}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className="upload-box"
-        >
-          <input
-            type="file"
-            accept={`${SUPPORTED_ACCEPT}`}
-            id="fileInput"
-            className="file-input"
-            onChange={handleFileSelect}
-          />
-          <label htmlFor="fileInput" className="file-label">
-            + Choose File
-          </label>
-        </div>
-        <div className="info">
-          Max file size 1GB. Please upload files of type:{" "}
-          {SUPPORTED_EXTENSIONS.map((ext) =>
-            ext.replace(".", "").toUpperCase()
-          ).join(", ")}
-        </div>
+      <div
+        id={`dropZone ${isDragOver ? "drag-over" : ""}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className="upload-box"
+      >
+        <input
+          type="file"
+          accept={`${SUPPORTED_ACCEPT}`}
+          id="fileInput"
+          className="file-input"
+          onChange={handleFileSelect}
+        />
+        <label htmlFor="fileInput" className="file-label">
+          + Choose File
+        </label>
+      </div>
+      <div className="info">
+        Max file size 1GB. Please upload files of type:{" "}
+        {SUPPORTED_EXTENSIONS.map((ext) =>
+          ext.replace(".", "").toUpperCase()
+        ).join(", ")}
       </div>
     </ContentWrapper>
   );
