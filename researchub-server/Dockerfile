@@ -18,5 +18,3 @@ EXPOSE 5000
 
 # 7. Run the app
 CMD ["npm","run","dev"]
-
-# TODO, create a network to connect with mongodb database

@@ -1,0 +1,71 @@
+services:
+  researchub-mongo-db:
+    image: mongo:latest
+    ports: 
+      - "27017:27017"
+    volumes:
+      - researchub-mongo-db-data:/data/db
+    networks:
+      - researchub-network
+    
+  
+  researchub-ai-engine:
+    build:
+      context: ./researchub-ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # mongo-db volume that persists across container starts
+      - ./researchub-ai-engine:/src/usr/researchub-ai-engine
+    # we are mounting the local directory to reflect live changes
+    # before ":" is the host machine path
+    # after ":" is the container WORKDIR path
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+
+  researchub-server:
+    build:
+      context: ./researchub-server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./researchub-server:/src/usr/researchub-server
+    # we are mounting the local directory to reflect live changes - not working
+    # before ":" is the host machine path
+    # after ":" is the container WORKDIR path
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+      - researchub-ai-engine
+
+  researchub-client:
+    build:
+      context: ./researchub-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./researchub-client:/src/usr/researchub-client
+    # we are mounting the local directory to reflect live changes - not working
+    # before ":" is the host machine path
+    # after ":" is the container WORKDIR path
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+      - researchub-ai-engine
+      - researchub-server
+
+volumes:
+  researchub-mongo-db-data:
+
+networks:
+  researchub-network:
+    driver: bridge 
+    # bridge is the default network connection in docker compose
+    # that sets up connection between the compose's services
