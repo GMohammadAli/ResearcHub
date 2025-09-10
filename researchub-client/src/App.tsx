@@ -19,6 +19,7 @@ function App() {
           <Route path="/chat/:documentId" element={<Chat />} />
           <Route path="/upload/file" element={<UploadFile />} />
           <Route path="/" element={<Navigate to="/upload/file" />} />
+          <Route path="*" element={<Navigate to="/upload/file" />} />
         </Routes>
       </Router>
     </div>

@@ -7,8 +7,10 @@ load_dotenv()
 ## os helps python interact with operating system
 import os
 
-DB_URI = os.getenv("MONGO_DB_URI")
-DB_NAME = os.getenv("MONGO_DB_NAME")
+DB_URI = os.getenv("MONGO_DB_URL")
+if not DB_URI:
+    raise ValueError("MONGO_DB_URL is not set")
+DB_NAME = DB_URI.split("/")[-1]
 
 # print(DB_URI)
 

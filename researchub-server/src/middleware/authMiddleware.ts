@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 dotenv.config();
 
-const AUTH_TOKEN = process.env.SECRET_AUTH_TOKEN || "mysecret123";
+const AUTH_TOKEN = process.env.REACT_APP_SECRET_AUTH_TOKEN || "mysecret123";
 
 export const isAuthenticated = (
   req: Request,

@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
-const PORT = process.env.PORT ?? 1025;
+const PORT = process.env.SERVER_PORT ?? 1025;
 //port should always be used in the range 1024 above till 65535
 //port below 1024 are used by internal systems for communication like HTTP on 80/ SMTP on 25
 const MONGO_DB_URL =
