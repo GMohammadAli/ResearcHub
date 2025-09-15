@@ -1,6 +1,26 @@
 from transformers import pipeline
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+##Loads the .env file into os.environ
+load_dotenv()
+
+## os helps python interact with operating system
+import os
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Configure API key
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Create model instance
+model = genai.GenerativeModel("gemini-1.5-flash")
+
 
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+
+
+# Only certain functions are exposed rest all (not mentioned down here) are private
+__all__ = ["getSummary", "summarizeDocument"]
 
 
 def getDummySummary():
@@ -22,10 +42,78 @@ def getDummySummary():
     Her eighth husband, Rashid Rajput, was deported in 2006 to his native Pakistan after an investigation by the Joint Terrorism Task Force.
     If convicted, Barrientos faces up to four years in prison.  Her next court appearance is scheduled for May 18.
     """
-    # summary = summarizer(ARTICLE, max_length=130, min_length=30, do_sample=False)
-    return ARTICLE[:600]
-    # summary[0]["summary_text"]
+    summary = summarizer(ARTICLE, max_length=130, min_length=30, do_sample=False)
+    print(summary)
+    return summary[0]["summary_text"]
 
 
-if __name__ == "__main__":
-    summary = getDummySummary()
+def getSummary(input):
+    try:
+        summary = summarizer(input, max_length=130, min_length=30, do_sample=False)[0][
+            "summary_text"
+        ]
+        return summary
+    except Exception as error:
+        print("Error while summarizing the userInput", input[:200], flush=True)
+        print(f"error {error}", flush=True)
+        return None
+
+
+def summarizeDocument(extractedText, chunk_size=1000):
+    """
+    Summarizes a document using a map-reduce style method.
+    Splits text into smaller sub-chunks of `chunk_size` characters.
+
+    Args:
+        extractedText (list of str): List of text chunks.
+        chunk_size (int): Maximum length of each sub-chunk.
+
+    Returns:
+        str: Final summary of the document.
+    """
+    summaries = []
+
+    def split_text(text, size):
+        """Split text into pieces of max `size` characters."""
+        return [text[i : i + size] for i in range(0, len(text), size)]
+
+    # Step 1: Summarize each sub-chunk
+    for chunk in extractedText:
+        sub_chunks = split_text(chunk.strip(), chunk_size)
+        for sub_chunk in sub_chunks:
+            try:
+                summary = getSummary(sub_chunk)
+                print(f"Summary found: {summary}", flush=True)
+                summaries.append(summary)
+            except Exception as e:
+                print("Error summarizing sub-chunk:", str(e))
+                continue
+
+    # Step 2: Summarize the combined summaries
+    try:
+        summaries = summarize_in_batches(summaries)
+        finalSummary = getSummary(" ".join(summaries))
+    except Exception as e:
+        print("Summarization error:", str(e), flush=True)
+        return {"error": str(e)}
+
+    print("BART Summary:", finalSummary, flush=True)
+    return finalSummary
+
+
+def summarize_in_batches(texts, batch_size=5):
+    batch_summaries = []
+    for i in range(0, len(texts), batch_size):
+        batch_text = " ".join(texts[i : i + batch_size])
+        batch_summary = getSummary(batch_text)
+        batch_summaries.append(batch_summary)
+    return batch_summaries
+
+
+def getGeminiSummary(input):
+    """Summarize input text using Gemini model."""
+    prompt = f"Summarize the following text in 3-4 sentences:\n\n{input}"
+    response = model.generate_content(prompt)
+    return response.text
+
+    return response.text

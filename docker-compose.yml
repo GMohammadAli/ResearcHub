@@ -1,8 +1,9 @@
 services:
   researchub-mongo-db:
     image: mongo:latest
-    ports: 
-      - "27017:27017"
+    ports:
+      # port 27018 to make it accessible in compass 
+      - "27018:27017"
     volumes:
       - researchub-mongo-db-data:/data/db
     networks:

@@ -51,10 +51,10 @@ const getDocumentSummary = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(
       `Error while fetching document summary for docId: ${docId}`,
-      error
+      error.response?.data?.message || error?.response || error
     );
     res.status(500).json({
-      error: "Proxy error",
+      error: "Proxy Error",
       details: error.response?.data?.error || error,
     });
   }

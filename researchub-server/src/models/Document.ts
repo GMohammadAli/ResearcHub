@@ -36,10 +36,13 @@ documentSchema.statics.chunkContent = function (text: string) {
   const CHUNK_SIZE = 1000000; //1 MB
   const chunks: string[] = [];
   for (let i = 0; i < text.length; i += CHUNK_SIZE) {
-    chunks.push(text.slice(i, i + CHUNK_SIZE));
+    const chunk = text.slice(i, i + CHUNK_SIZE).trim();
+    chunks.push(chunk);
   }
   return chunks;
 };
+
+documentSchema.index({ content: 1, uploadedAt: -1 });
 
 export const DocumentModel = model<IDocument, IDocumentModel>(
   "Document",
