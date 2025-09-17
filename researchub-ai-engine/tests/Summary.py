@@ -116,4 +116,8 @@ def getGeminiSummary(input):
     response = model.generate_content(prompt)
     return response.text
 
+
+def getGeminiAnswer(question, context):
+    response = model.generate_content([context, question])
+    # print(response)
     return response.text

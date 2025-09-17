@@ -7,6 +7,7 @@ from tests.Summary import (
     getSummary,
     summarizeDocument,
     getGeminiSummary,
+    getGeminiAnswer,
 )
 
 app = Flask(__name__)
@@ -77,27 +78,6 @@ def extractText(docId):
         return None
 
 
-# def summarizeDocument(extractedText):
-#     # Map-Reduce Summarization Method
-#     summaries = []
-#     for chunk in extractedText:
-#         # print(chunk)
-#         # Summarize each chunk
-#         summary = getSummary(chunk.strip())
-#         print(f"Summray found {summary}")
-#         summaries.append(summary)
-#     # print(summaries)
-
-#     try:
-#         finalSummary = getSummary(" ".join(summaries))
-#     except Exception as e:
-#         print("Summarization error:", str(e))
-#         return jsonify({"error": str(e)})
-#     # Summarize the combined summaries
-#     print("BART Summary:", finalSummary)
-#     return finalSummary
-
-
 @app.route("/summarize/<docId>/", methods=["POST"])
 def getAnswer(docId):
     # Get question from query string OR request body
@@ -106,14 +86,42 @@ def getAnswer(docId):
     if not question:
         return jsonify({"error": "No question provided", "success": false}), 400
 
-    # Dummy logic: just echo back docId + question
-    return jsonify(
-        {
-            "docId": docId,
-            "question": question,
-            "answer": f"Dummy answer for document {docId} and question '{question}'.",
-            "success": True,
-        }
+    dummyAnswer = False
+    if dummyAnswer:
+        # Dummy logic: just echo back docId + question
+        return (
+            jsonify(
+                {
+                    "docId": docId,
+                    "question": question,
+                    "answer": f"Dummy answer for document {docId} and question '{question}'.",
+                    "success": True,
+                },
+            ),
+            200,
+        )
+
+    print("Tried extracting text", flush=True)
+    extractedText = extractText(docId)
+    if not extractedText:
+        return jsonify({"error": "Document not found", "success": false}), 404
+
+    print("Size of extractedText is", len(extractedText), flush=True)
+
+    extractedText = " ".join(extractedText)
+
+    answer = getGeminiAnswer(question, extractedText)
+
+    return (
+        jsonify(
+            {
+                "docId": docId,
+                "question": question,
+                "answer": answer,
+                "success": True,
+            },
+        ),
+        200,
     )
 
 

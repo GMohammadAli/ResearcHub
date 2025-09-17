@@ -3,7 +3,7 @@ import ContentWrapper from "../components/ContentWrapper";
 import { useDocumentSummary } from "../hooks/useDocumentSummary";
 import { useDocumentQuery } from "../hooks/useDocumentQuery";
 import { useEffect, useRef, useState } from "react";
-
+import ReactMarkdown from "react-markdown";
 interface Message {
   sender: "user" | "bot";
   text: string;
@@ -37,12 +37,13 @@ const Chat = () => {
     input.value = "";
   };
 
-  // TODO, Scroll to bottom whenever messages change
-  // useEffect(() => {
-  //   if (chatRef.current) {
-  //     chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  //   }
-  // }, [messages]);
+  useEffect(() => {
+    if (chatRef.current) {
+      requestAnimationFrame(() => {
+        chatRef.current!.scrollTop = chatRef.current!.scrollHeight;
+      });
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (queryResponse?.success) {
@@ -67,7 +68,13 @@ const Chat = () => {
         </div>
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}`}>
-            {msg.sender === "bot" ? <pre>{msg.text}</pre> : msg.text}
+            {msg.sender === "bot" ? (
+              <pre>
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              </pre>
+            ) : (
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
+            )}
           </div>
         ))}
       </div>
@@ -78,6 +85,12 @@ const Chat = () => {
           id="userInput"
           ref={inputRef}
           placeholder="Type your message"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault(); // prevents newline
+              sendMessage();
+            }
+          }}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
