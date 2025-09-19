@@ -23,6 +23,7 @@ interface UploadResponse {
 }
 
 export const useUploadFile = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploadResponse, setUploadResponse] = useState<UploadResponse | null>(
     null
@@ -57,6 +58,7 @@ export const useUploadFile = () => {
 
   const uploadFile = useCallback(async (file: File) => {
     try {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("document", file);
       const res = await ApiService.post<UploadResponse>(
@@ -74,6 +76,7 @@ export const useUploadFile = () => {
           documentId: res.data?.documentId || "",
           message: res.data?.message || "File uploaded successfully",
         });
+        toast.success(`${file.name} Document was uploaded successfully!`);
       } else setUploadResponse({ success: false });
     } catch (error) {
       console.error(
@@ -82,6 +85,7 @@ export const useUploadFile = () => {
       );
       toast.error(`Error while uploading file: ${file.name}`);
     } finally {
+      setIsLoading(false);
       reset();
     }
   }, []);
@@ -97,6 +101,7 @@ export const useUploadFile = () => {
   return {
     uploadResponse,
     file,
+    isLoading,
     handleFiles,
   };
 };

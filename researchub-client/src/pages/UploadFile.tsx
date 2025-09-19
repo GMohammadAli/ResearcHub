@@ -8,7 +8,7 @@ import ContentWrapper from "../components/ContentWrapper";
 import { useNavigate } from "react-router-dom";
 
 const UploadFile = () => {
-  const { handleFiles, uploadResponse } = useUploadFile();
+  const { handleFiles, uploadResponse, isLoading } = useUploadFile();
 
   const navigate = useNavigate();
   const [isDragOver, setIsDragOver] = useState(false);
@@ -38,7 +38,9 @@ const UploadFile = () => {
   }, [uploadResponse, navigate]);
 
   return (
-    <ContentWrapper containerClass={"upload-file-container"}>
+    <ContentWrapper
+      containerClass={`upload-file-container ${isLoading ? "loader" : ""}`}
+    >
       <h1>Ask ResearcHub</h1>
       <p>
         Easily upload PDFs, docs, or text files, and get AI-powered answers to

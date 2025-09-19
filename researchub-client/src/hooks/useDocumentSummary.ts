@@ -26,6 +26,7 @@ export const useDocumentSummary = (docId: string | null) => {
           summary: res.data?.summary || "",
           message: res.data?.message || "Summary fetched successfully",
         });
+        toast.success("🎉 Your summary is ready!");
       } else {
         setSummaryResponse({ success: false });
         toast.error(res.data?.message || "Failed to fetch summary");

@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 interface Message {
   sender: "user" | "bot";
   text: string;
+  loading?: boolean;
 }
 
 const Chat = () => {
@@ -15,7 +16,8 @@ const Chat = () => {
 
   if (!documentId) navigate("/");
 
-  const { summaryResponse } = useDocumentSummary(documentId);
+  const { summaryResponse, loading: documentSummaryLoader } =
+    useDocumentSummary(documentId);
   const { queryResponse, askQuestion } = useDocumentQuery(documentId);
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -29,7 +31,11 @@ const Chat = () => {
     const userText = input.value;
 
     // Add user message
-    setMessages((prev) => [...prev, { sender: "user", text: userText }]);
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", text: userText },
+      { sender: "bot", text: "", loading: true },
+    ]);
 
     askQuestion(userText);
 
@@ -47,16 +53,35 @@ const Chat = () => {
 
   useEffect(() => {
     if (queryResponse?.success) {
-      // Add bot reply
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: `${queryResponse?.answer}` },
-      ]);
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastIndex = updated.findIndex(
+          (m) => m.sender === "bot" && m.loading
+        );
+
+        if (lastIndex !== -1) {
+          // Replace the loading message with real answer
+          updated[lastIndex] = {
+            sender: "bot",
+            text: `${queryResponse?.answer}`,
+            loading: false,
+          };
+        } else {
+          // Fallback: just push it
+          updated.push({ sender: "bot", text: `${queryResponse?.answer}` });
+        }
+
+        return updated;
+      });
     }
   }, [queryResponse]);
 
   return (
-    <ContentWrapper containerClass="chat-with-doc-container">
+    <ContentWrapper
+      containerClass={`chat-with-doc-container ${
+        documentSummaryLoader ? "loader" : ""
+      }`}
+    >
       <div className="summary-card">
         <h3>📄 Document Summary</h3>
         <p>{summaryResponse?.summary}</p>
@@ -69,9 +94,17 @@ const Chat = () => {
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}`}>
             {msg.sender === "bot" ? (
-              <pre>
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
-              </pre>
+              msg.loading ? (
+                <div className="typing-indicator">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
+              ) : (
+                <pre>
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                </pre>
+              )
             ) : (
               <ReactMarkdown>{msg.text}</ReactMarkdown>
             )}
