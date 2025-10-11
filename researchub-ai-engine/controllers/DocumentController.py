@@ -114,3 +114,15 @@ def generateTextSummary():
             ),
             500,
         )
+
+
+def generateDocumentSummary_HF(docId):
+    return "Dummy Summary"
+
+
+def generateAnswers_HF(docId):
+    return "This is the answer to your question"
+
+
+def generateTextSummary_HF():
+    return "Dummy Summary"
