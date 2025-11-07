@@ -96,7 +96,7 @@ def generateTextSummary():
             jsonify(
                 {
                     "summary": summary,
-                    "message": "Summarized using Bart",
+                    "message": "Summarized using GEMINI",
                     "success": True,
                 }
             ),
