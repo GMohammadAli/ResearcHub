@@ -10,7 +10,7 @@ COPY requirements.txt .
 # 4. Install python libraries, 
 # check if we need to create a virtual environment here????
 # not needed as each container already runs in an isolated environment
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
 # 5. Copy the source code 
 COPY . .

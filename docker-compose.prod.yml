@@ -1,0 +1,62 @@
+services:
+  researchub-mongo-db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - researchub-mongo-db-data:/data/db
+    networks:
+      - researchub-network
+    
+  
+  researchub-ai-engine:
+    build:
+      context: ./researchub-ai-engine
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "8000:8000"
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+    restart: always
+    command: gunicorn -w 4 -b 0.0.0.0:8000 app:app
+
+  researchub-server:
+    build:
+      context: ./researchub-server
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "5000:5000"
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+      - researchub-ai-engine
+    restart: always
+    command: ["npm", "run", "prod"]
+
+  researchub-client:
+    build:
+      context: ./researchub-client
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - "3000:3000"
+    networks:
+      - researchub-network
+    depends_on:
+      - researchub-mongo-db
+      - researchub-ai-engine
+      - researchub-server
+    restart: always
+    command: ["npm", "run", "prod"]
+
+volumes:
+  researchub-mongo-db-data:
+
+networks:
+  researchub-network:
+    driver: bridge 
