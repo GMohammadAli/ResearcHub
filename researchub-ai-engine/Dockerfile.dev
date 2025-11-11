@@ -10,7 +10,7 @@ COPY requirements.txt .
 # 4. Install python libraries, 
 # check if we need to create a virtual environment here????
 # not needed as each container already runs in an isolated environment
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy the source code 
 COPY . .
@@ -19,4 +19,7 @@ COPY . .
 EXPOSE 8000
 
 # 7. Run the flask app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "App:app"]
+CMD ["python", "App.py"]
+
+
+

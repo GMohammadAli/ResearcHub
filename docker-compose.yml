@@ -13,7 +13,7 @@ services:
   researchub-ai-engine:
     build:
       context: ./researchub-ai-engine
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     ports:
       - "8000:8000"
@@ -31,7 +31,7 @@ services:
   researchub-server:
     build:
       context: ./researchub-server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     ports:
       - "5000:5000"
@@ -49,7 +49,7 @@ services:
   researchub-client:
     build:
       context: ./researchub-client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     ports:
       - "3000:3000"
