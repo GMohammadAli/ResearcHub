@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import chatRouter from "./routes/chatRouter";
 import mongoose from "mongoose";
-import CronJobService from "./services/CronJobService";
+import cronService from "./services/cronService";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-CronJobService.init();
+cronService.init();
 
 app.get("/chat/health", (_, res) => res.json({ serverIsLive: true }));
 
