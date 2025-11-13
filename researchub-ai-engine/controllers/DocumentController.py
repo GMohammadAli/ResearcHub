@@ -4,6 +4,10 @@ from services.DocumentService import extractText
 from services.GeminiService import getSummary, getAnswers
 
 
+def getServerHealth():
+    return jsonify({"serverIsLive": True}), 200
+
+
 def generateDocumentSummary(docId):
     try:
         print("Tried extracting text")
