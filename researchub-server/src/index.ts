@@ -18,7 +18,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-cronService.init();
+// GITHUB Actions CRON implemented
+// that would ping servers every 10 mins just won't be part of any service
+// check -> .github/workflows/keepAlive.yml
+// cronService.init();
 
 app.get("/chat/health", (_, res) => res.json({ serverIsLive: true }));
 

@@ -1,0 +1,25 @@
+name: Keep Render Services Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes
+  workflow_dispatch:         # allow manual run
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    env:
+      SERVER_URL: ${{ secrets.SERVER_URL }}
+      AI_ENGINE_URL: ${{ secrets.AI_ENGINE_URL }}
+
+    steps:
+      - name: Ping Server
+        run: |
+          echo "Pinging researchub-server..."
+          curl -s $SERVER_URL
+
+      - name: Ping AI Engine
+        run: |
+          echo "Pinging researchub-ai-engine..."
+          curl -s $AI_ENGINE_URL
