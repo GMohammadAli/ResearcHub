@@ -5,7 +5,7 @@ from models.DocumentModel import Document
 def extractText(docId):
     try:
         document = Document(docId)
-        print(document)
+        # print(document)
         if document is None:
             print("Document not found")
             return None
