@@ -8,7 +8,7 @@ import time
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-PDF_PATH = BASE_DIR / "sampleFiles" / "Advantages-Of-File-Search-Over-RAG.pdf"
+PDF_PATH = BASE_DIR / "upload" / "Advantages-Of-File-Search-Over-RAG.pdf"
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)

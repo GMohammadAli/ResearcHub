@@ -18,6 +18,8 @@ genai.configure(api_key=GEMINI_API_KEY)
 # Create model instance
 model = genai.GenerativeModel("gemini-2.5-flash")
 
+summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
+
 
 def getGeneratedContent(prompt):
     """Helper function to generate Gemini response with timeout handling."""
@@ -37,9 +39,7 @@ def getGeneratedContent(prompt):
 
 
 def getSummary(input):
-    return getGeneratedContent(
-        f"Summarize the following text in 3-4 sentences: \n\n {input}"
-    )
+    return getGeneratedContent(f"{summaryPrompt} {input}")
 
 
 def getAnswers(question, context):

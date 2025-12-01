@@ -5,7 +5,7 @@ from bson import ObjectId
 # Connect to DB
 dbConnection = getDatabase()
 # Collection reference
-documentCollection = dbConnection["documents"]
+documentCollection = dbConnection["DOCUMENTS"]
 
 
 class Document:
@@ -27,3 +27,16 @@ class Document:
     def content(self) -> list[str]:
         """Return extracted text chunks"""
         return self.data.get("content", [])
+
+    @property
+    def meta(self) -> Dict[str, Any]:
+        """Returns metaData about the document"""
+        return self.data.get("meta", {})
+
+    def update(self, updateObject: dict):
+        """Update the document in MongoDB and refresh local data."""
+        documentCollection.update_one(
+            {"_id": ObjectId(self.docId)}, {"$set": updateObject}
+        )
+        # refresh local data after update
+        self.data = self.fetchDocument()

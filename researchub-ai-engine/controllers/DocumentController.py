@@ -2,6 +2,17 @@
 from flask import request, jsonify
 from services.DocumentService import extractText
 from services.GeminiService import getSummary, getAnswers
+from dotenv import load_dotenv
+
+# Gemini File Store services
+from services.GeminiFileStoreService import (
+    initializeSearchStoreAndGetSummary,
+    getAnswersFromStore,
+)
+
+load_dotenv()
+
+USE_GEMINI_FILE_SEARCH = os.getenv("USE_GEMINI_FILE_SEARCH", False)
 
 
 def getServerHealth():
@@ -16,7 +27,10 @@ def generateDocumentSummary(docId):
             return jsonify({"error": "Document not found", "success": false}), 404
 
         print("Size of extractedText is", len(extractedText))
-        finalSummary = getSummary(extractedText)
+        if USE_GEMINI_FILE_SEARCH:
+            finalSummary = initializeSearchStoreAndGetSummary(extractedText, docId)
+        else:
+            finalSummary = getSummary(extractedText)
         # print(finalSummary)
         return (
             jsonify(
@@ -58,7 +72,10 @@ def generateAnswers(docId):
 
         extractedText = " ".join(extractedText)
 
-        answer = getAnswers(question, extractedText)
+        if USE_GEMINI_FILE_SEARCH:
+            answer = getAnswersUsingStore(question, extractedText, docId)
+        else:
+            answer = getAnswers(question, extractedText)
 
         return (
             jsonify(
