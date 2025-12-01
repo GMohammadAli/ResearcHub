@@ -7,10 +7,12 @@ from dotenv import load_dotenv
 # Gemini File Store services
 from services.GeminiFileStoreService import (
     initializeSearchStoreAndGetSummary,
-    getAnswersFromStore,
+    getAnswersUsingStore,
 )
 
 load_dotenv()
+
+import os
 
 USE_GEMINI_FILE_SEARCH = os.getenv("USE_GEMINI_FILE_SEARCH", False)
 

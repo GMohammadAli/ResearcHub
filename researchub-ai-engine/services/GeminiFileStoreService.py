@@ -23,10 +23,6 @@ load_dotenv()
 import os
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-USE_API_FILE_SEARCH = os.getenv("USE_API_FILE_SEARCH", True)
-
-# Configure api key
-genai.configure(api_key=GEMINI_API_KEY)
 
 summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 
@@ -36,7 +32,7 @@ summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 #  Uses Gemini's File search store features that takes care of
 #  chunking, embedding, vector stores, semantic search under the hood
 
-TEMP_DIR = Path("temp_docs")
+TEMP_DIR = Path("upload")
 TEMP_DIR.mkdir(exist_ok=True)
 
 client = genai.Client(api_key=GEMINI_API_KEY)

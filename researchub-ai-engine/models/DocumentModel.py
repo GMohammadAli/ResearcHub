@@ -1,11 +1,12 @@
 # document data and instance-specific logic
 from config.MongoClient import getDatabase
+from typing import Dict, Any
 from bson import ObjectId
 
 # Connect to DB
 dbConnection = getDatabase()
 # Collection reference
-documentCollection = dbConnection["DOCUMENTS"]
+documentCollection = dbConnection["documents"]
 
 
 class Document:
