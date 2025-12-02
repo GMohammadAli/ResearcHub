@@ -38,7 +38,7 @@ def generateDocumentSummary(docId):
             jsonify(
                 {
                     "summary": finalSummary,
-                    "message": "Summarized using Bart",
+                    "message": "Summarized using GEMINI",
                     "success": True,
                 }
             ),
@@ -95,10 +95,10 @@ def generateAnswers(docId):
         return (
             jsonify(
                 {
-                    docId: docId,
-                    question: question,
-                    success: False,
-                    error: "Internal Server Error",
+                    "docId": docId,
+                    "question": question,
+                    "success": False,
+                    "error": "Internal Server Error",
                 },
             ),
             500,
