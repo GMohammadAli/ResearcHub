@@ -1,4 +1,3 @@
-// UploadFile.tsx
 import { ChangeEvent, DragEvent, useEffect, useState } from "react";
 import {
   SUPPORTED_ACCEPT,
@@ -6,7 +5,7 @@ import {
   useUploadFile,
 } from "../hooks/useUploadFile";
 import { useNavigate } from "react-router-dom";
-import { uploadStyles } from "../assets/styles/UploadFile.styles";
+import "../assets/styles/UploadFile.css";
 
 const UploadFile = () => {
   const { handleFiles, uploadResponse, isLoading } = useUploadFile();
@@ -37,13 +36,13 @@ const UploadFile = () => {
   }, [uploadResponse, navigate]);
 
   return (
-    <div style={uploadStyles.container}>
-      <div style={uploadStyles.contentCard}>
+    <div className="upload-container">
+      <div className="upload-content-card">
         {/* Header Section */}
-        <div style={uploadStyles.header}>
-          <div style={uploadStyles.iconWrapper}>
+        <div className="upload-header">
+          <div className="upload-icon-wrapper">
             <svg
-              style={uploadStyles.icon}
+              className="upload-icon"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -56,8 +55,8 @@ const UploadFile = () => {
               />
             </svg>
           </div>
-          <h1 style={uploadStyles.title}>Ask ResearchHub</h1>
-          <p style={uploadStyles.subtitle}>
+          <h1 className="upload-title">Ask ResearchHub</h1>
+          <p className="upload-subtitle">
             Upload your documents and get instant AI-powered insights and
             answers
           </p>
@@ -65,11 +64,9 @@ const UploadFile = () => {
 
         {/* Drop Zone */}
         <div
-          style={{
-            ...uploadStyles.dropZone,
-            ...(isDragOver ? uploadStyles.dropZoneDragOver : {}),
-            ...(isLoading ? uploadStyles.dropZoneLoading : {}),
-          }}
+          className={`upload-dropzone ${isDragOver ? "drag-over" : ""} ${
+            isLoading ? "loading" : ""
+          }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -78,23 +75,21 @@ const UploadFile = () => {
             type="file"
             accept={SUPPORTED_ACCEPT}
             id="fileInput"
-            style={uploadStyles.fileInput}
+            className="upload-file-input"
             onChange={handleFileSelect}
             disabled={isLoading}
           />
 
           {isLoading ? (
-            <div style={uploadStyles.loadingState}>
-              <div style={uploadStyles.spinner} />
-              <p style={uploadStyles.loadingText}>
-                Processing your document...
-              </p>
+            <div className="upload-loading-state">
+              <div className="upload-spinner" />
+              <p className="upload-loading-text">Processing your document...</p>
             </div>
           ) : (
             <>
-              <div style={uploadStyles.uploadIcon}>
+              <div className="upload-icon-container">
                 <svg
-                  style={uploadStyles.uploadSvg}
+                  className="upload-svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -107,21 +102,19 @@ const UploadFile = () => {
                   />
                 </svg>
               </div>
-              <label htmlFor="fileInput" style={uploadStyles.fileLabel}>
-                <span style={uploadStyles.labelPrimary}>Click to upload</span>
-                <span style={uploadStyles.labelSecondary}>
-                  or drag and drop
-                </span>
+              <label htmlFor="fileInput" className="upload-file-label">
+                <span className="upload-label-primary">Click to upload</span>
+                <span className="upload-label-secondary">or drag and drop</span>
               </label>
             </>
           )}
         </div>
 
         {/* Info Section */}
-        <div style={uploadStyles.infoSection}>
-          <div style={uploadStyles.infoItem}>
+        <div className="upload-info-section">
+          <div className="upload-info-item">
             <svg
-              style={uploadStyles.infoIcon}
+              className="upload-info-icon"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -131,16 +124,16 @@ const UploadFile = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span style={uploadStyles.infoText}>
+            <span className="upload-info-text">
               Supported:{" "}
               {SUPPORTED_EXTENSIONS.map((ext) =>
                 ext.replace(".", "").toUpperCase()
               ).join(", ")}
             </span>
           </div>
-          <div style={uploadStyles.infoItem}>
+          <div className="upload-info-item">
             <svg
-              style={uploadStyles.infoIcon}
+              className="upload-info-icon"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -150,7 +143,7 @@ const UploadFile = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span style={uploadStyles.infoText}>Maximum file size: 1GB</span>
+            <span className="upload-info-text">Maximum file size: 500MB</span>
           </div>
         </div>
       </div>

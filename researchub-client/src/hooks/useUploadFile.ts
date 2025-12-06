@@ -4,12 +4,12 @@ import ApiService from "../services/ApiService";
 
 export const SUPPORTED_MIME_TYPES = [
   "application/pdf", // PDF
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
-  "application/msword", // DOC
-  "text/plain", // TXT
+  // "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+  // "application/msword", // DOC
+  // "text/plain", // TXT
 ];
 
-export const SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".doc", ".txt"];
+export const SUPPORTED_EXTENSIONS = [".pdf"]; //, ".docx", ".doc", ".txt"];
 
 export const SUPPORTED_ACCEPT: string = [
   ...SUPPORTED_MIME_TYPES,
