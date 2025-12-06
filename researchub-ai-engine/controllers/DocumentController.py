@@ -1,6 +1,6 @@
 # orchestrate requests & call models/services
 from flask import request, jsonify
-from services.DocumentService import extractText
+from services.DocumentService import extractText, getDocumentMeta
 from services.GeminiService import getSummary, getAnswers
 from dotenv import load_dotenv
 
@@ -26,13 +26,17 @@ def generateDocumentSummary(docId):
         print("Tried extracting text")
         extractedText = extractText(docId)
         if not extractedText:
-            return jsonify({"error": "Document not found", "success": false}), 404
-
+            return (
+                jsonify({"error": "Document not found", "success": false}),
+                404,
+            )
         print("Size of extractedText is", len(extractedText))
+
         if USE_GEMINI_FILE_SEARCH:
             finalSummary = initializeSearchStoreAndGetSummary(extractedText, docId)
         else:
             finalSummary = getSummary(extractedText)
+
         # print(finalSummary)
         return (
             jsonify(

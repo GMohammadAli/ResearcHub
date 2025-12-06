@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # DocumentService
-from services.DocumentService import getDocumentMeta, setDocumentMeta
+from services.DocumentService import getDocumentMeta, setDocumentMeta, extractText
 
 load_dotenv()
 
@@ -33,6 +33,10 @@ summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 #  chunking, embedding, vector stores, semantic search under the hood
 
 # Reference -> https://www.analyticsvidhya.com/blog/2025/11/gemini-api-file-search/
+
+# Free tier api is very slow and indexing takes time and asynchronous making it impossible to wait
+# for it and then generate the summary so, when generating summary, whole context is passed
+# for qna file search is properly used
 
 TEMP_DIR = Path("upload")
 TEMP_DIR.mkdir(exist_ok=True)
@@ -68,16 +72,32 @@ def createStoreAndUpload(store_name: str, local_file_path: str):
 
     # print(f"operation {operation}")
 
+    # Wait for store upload
     while not operation.done:
         time.sleep(5)
         operation = client.operations.get(operation)
 
-    # print(f"store_name_value {store_name_value}")
+    print(f"store_name_value {store_name_value}")
 
+    # Please note, file is just uploaded, indexing, chunking all these steps are pending
     return store_name_value
 
 
-def queryStore(store_name: str, question: str):
+def queryStore(store_name: str, question: str, context: str = None):
+    print("📦 Querying Gemini Store...")
+    print(f"question {question} store_name {store_name} ")
+    if context:
+        print("⚡ Using RAW CONTEXT instead of store (store may not be ready)")
+        prompt = f"{question}\n\nContext:\n{context}"
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash", contents=prompt
+            )
+            return response.text
+        except Exception as e:
+            print(f"❌ Error with direct context query: {e}")
+            return None
+
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=question,
@@ -112,7 +132,8 @@ def initializeSearchStoreAndGetSummary(input, documentId):
         },
     )
 
-    return queryStore(storeName, summaryPrompt)
+    # for summary, full context is passed as indexing is asynchronous
+    return queryStore(storeName, summaryPrompt, input)
 
 
 def getAnswersUsingStore(question, context, documentId):
@@ -141,5 +162,6 @@ def getAnswersUsingStore(question, context, documentId):
                 "fileStoreExpiryDate": datetime.now() + timedelta(hours=48),
             },
         )
-
-    return queryStore(storeName, question)
+        return queryStore(storeName, question, contextText)
+    else:
+        return queryStore(storeName, question)
