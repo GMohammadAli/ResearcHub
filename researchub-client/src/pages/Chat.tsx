@@ -3,7 +3,7 @@ import { useDocumentSummary } from "../hooks/useDocumentSummary";
 import { useDocumentQuery } from "../hooks/useDocumentQuery";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { chatStyles } from "../assets/styles/Chat.styles";
+import "../assets/styles/Chat.css";
 
 interface Message {
   sender: "user" | "bot";
@@ -83,14 +83,14 @@ const Chat = () => {
   }, [queryResponse]);
 
   return (
-    <div style={chatStyles.container}>
+    <div className="chat-container">
       {/* Header */}
-      <div style={chatStyles.header}>
-        <div style={chatStyles.headerContent}>
-          <div style={chatStyles.headerLeft}>
-            <div style={chatStyles.brandIcon}>
+      <div className="chat-header">
+        <div className="chat-header-content">
+          <div className="chat-header-left">
+            <div className="chat-brand-icon">
               <svg
-                style={chatStyles.brandSvg}
+                className="chat-brand-svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -104,18 +104,15 @@ const Chat = () => {
               </svg>
             </div>
             <div>
-              <h2 style={chatStyles.headerTitle}>Document Chat</h2>
-              <p style={chatStyles.headerSubtitle}>
+              <h2 className="chat-header-title">ResearcHub - Document Chat</h2>
+              <p className="chat-header-subtitle">
                 AI-powered document assistant
               </p>
             </div>
           </div>
-          <button
-            onClick={() => navigate("/")}
-            style={chatStyles.newChatButton}
-          >
+          <button onClick={() => navigate("/")} className="chat-new-button">
             <svg
-              style={chatStyles.buttonIcon}
+              className="chat-button-icon"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -132,20 +129,17 @@ const Chat = () => {
         </div>
       </div>
 
-      <div style={chatStyles.mainContent}>
+      <div className="chat-main">
         {/* Summary Card */}
         <div
-          style={{
-            ...chatStyles.summaryCard,
-            ...(showSummary
-              ? chatStyles.summaryExpanded
-              : chatStyles.summaryCollapsed),
-          }}
+          className={`chat-summary-card ${
+            showSummary ? "chat-summary-expanded" : "chat-summary-collapsed"
+          }`}
         >
-          <div style={chatStyles.summaryHeader}>
-            <div style={chatStyles.summaryTitleRow}>
+          <div className="chat-summary-header">
+            <div className="chat-summary-title-row">
               <svg
-                style={chatStyles.summaryIcon}
+                className="chat-summary-icon"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -157,18 +151,17 @@ const Chat = () => {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 style={chatStyles.summaryTitle}>Document Summary</h3>
+              <h3 className="chat-summary-title">Document Summary</h3>
             </div>
             <button
               onClick={() => setShowSummary(!showSummary)}
-              style={chatStyles.toggleButton}
+              className="chat-toggle-button"
               aria-label={showSummary ? "Collapse summary" : "Expand summary"}
             >
               <svg
-                style={{
-                  ...chatStyles.chevronIcon,
-                  transform: showSummary ? "rotate(180deg)" : "rotate(0deg)",
-                }}
+                className={`chat-chevron ${
+                  showSummary ? "rotate-180" : "no-rotate"
+                }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -184,14 +177,14 @@ const Chat = () => {
           </div>
           {showSummary &&
             (documentSummaryLoader ? (
-              <div style={chatStyles.summaryLoader}>
-                <div style={chatStyles.summarySpinner} />
-                <p style={chatStyles.summaryLoadingText}>
+              <div className="chat-summary-loader">
+                <div className="chat-summary-spinner" />
+                <p className="chat-summary-loading-text">
                   Generating summary...
                 </p>
               </div>
             ) : (
-              <div style={chatStyles.summaryContent}>
+              <div className="chat-summary-content">
                 <ReactMarkdown>
                   {summaryResponse?.summary || "No summary available"}
                 </ReactMarkdown>
@@ -200,12 +193,12 @@ const Chat = () => {
         </div>
 
         {/* Chat Messages */}
-        <div style={chatStyles.chatContainer} ref={chatRef}>
+        <div className="chat-messages" ref={chatRef}>
           {messages.length === 0 && (
-            <div style={chatStyles.welcomeMessage}>
-              <div style={chatStyles.welcomeIcon}>👋</div>
-              <h3 style={chatStyles.welcomeTitle}>Hi there!</h3>
-              <p style={chatStyles.welcomeText}>
+            <div className="chat-welcome">
+              <div className="chat-welcome-icon">👋</div>
+              <h3 className="chat-welcome-title">Hi there!</h3>
+              <p className="chat-welcome-text">
                 I've analyzed your document. Ask me anything about it!
               </p>
             </div>
@@ -214,17 +207,14 @@ const Chat = () => {
           {messages.map((msg, index) => (
             <div
               key={index}
-              style={{
-                ...chatStyles.messageWrapper,
-                ...(msg.sender === "user"
-                  ? chatStyles.userMessageWrapper
-                  : chatStyles.botMessageWrapper),
-              }}
+              className={`chat-message-wrapper ${
+                msg.sender === "user" ? "chat-message-user" : "chat-message-bot"
+              }`}
             >
               {msg.sender === "bot" && (
-                <div style={chatStyles.botAvatar}>
+                <div className="chat-bot-avatar">
                   <svg
-                    style={chatStyles.avatarIcon}
+                    className="chat-avatar-icon"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -239,32 +229,29 @@ const Chat = () => {
                 </div>
               )}
               <div
-                style={{
-                  ...chatStyles.message,
-                  ...(msg.sender === "user"
-                    ? chatStyles.userMessage
-                    : chatStyles.botMessage),
-                }}
+                className={`chat-message ${
+                  msg.sender === "user" ? "user" : "bot"
+                }`}
               >
                 {msg.sender === "bot" ? (
                   msg.loading ? (
-                    <div style={chatStyles.typingIndicator}>
-                      <span style={chatStyles.typingDot} />
+                    <div className="chat-typing">
+                      <span className="chat-typing-dot" />
                       <span
+                        className="chat-typing-dot"
                         style={{
-                          ...chatStyles.typingDot,
                           animationDelay: "0.2s",
                         }}
                       />
                       <span
+                        className="chat-typing-dot"
                         style={{
-                          ...chatStyles.typingDot,
                           animationDelay: "0.4s",
                         }}
                       />
                     </div>
                   ) : (
-                    <div style={chatStyles.markdownContent}>
+                    <div className="chat-markdown">
                       <ReactMarkdown>{msg.text}</ReactMarkdown>
                     </div>
                   )
@@ -277,13 +264,13 @@ const Chat = () => {
         </div>
 
         {/* Input Area */}
-        <div style={chatStyles.inputContainer}>
-          <div style={chatStyles.inputWrapper}>
+        <div className="chat-input-container">
+          <div className="chat-input-wrapper">
             <input
               type="text"
               ref={inputRef}
               placeholder="Ask a question about your document..."
-              style={chatStyles.input}
+              className="chat-input"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -293,11 +280,11 @@ const Chat = () => {
             />
             <button
               onClick={sendMessage}
-              style={chatStyles.sendButton}
+              className="chat-send-button"
               title="Send Message"
             >
               <svg
-                style={chatStyles.sendIcon}
+                className="chat-send-icon"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
