@@ -43,3 +43,9 @@ docker run -p 8000:8000 --network researchub-network --name researchub-ai-engine
 ```bash 
 docker compose up --build
 ```
+
+# Using Docker Compose for production
+
+```bash
+docker compose -f docker-compose.prod.yml up --build
+```

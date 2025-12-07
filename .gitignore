@@ -6,3 +6,5 @@ ai-summarizer-bot-v2.png
 */node_modules
 */package-lock.json
 researchub-server/uploads
+
+*/dist

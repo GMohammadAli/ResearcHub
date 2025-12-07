@@ -75,7 +75,7 @@ const getAnswerToQuestions = async (req: Request, res: Response) => {
 
   try {
     const response = await ApiService.post(
-      `/summarize/${docId}/?question=${question}`
+      `/summarize/${docId}/qna?question=${question}`
     );
     res.status(response.data.status || 200).json(response.data);
   } catch (error: any) {

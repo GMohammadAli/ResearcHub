@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import chatRouter from "./routes/chatRouter";
 import mongoose from "mongoose";
+import cronService from "./services/cronService";
 
 dotenv.config();
 
@@ -16,6 +17,11 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+// GITHUB Actions CRON implemented
+// that would ping servers every 10 mins just won't be part of any service
+// check -> .github/workflows/keepAlive.yml
+// cronService.init();
 
 app.get("/chat/health", (_, res) => res.json({ serverIsLive: true }));
 

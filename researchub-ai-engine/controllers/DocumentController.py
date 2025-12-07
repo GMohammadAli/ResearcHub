@@ -1,7 +1,24 @@
 # orchestrate requests & call models/services
 from flask import request, jsonify
-from services.DocumentService import extractText
+from services.DocumentService import extractText, getDocumentMeta
 from services.GeminiService import getSummary, getAnswers
+from dotenv import load_dotenv
+
+# Gemini File Store services
+from services.GeminiFileStoreService import (
+    initializeSearchStoreAndGetSummary,
+    getAnswersUsingStore,
+)
+
+load_dotenv()
+
+import os
+
+USE_GEMINI_FILE_SEARCH = os.getenv("USE_GEMINI_FILE_SEARCH", False)
+
+
+def getServerHealth():
+    return jsonify({"serverIsLive": True}), 200
 
 
 def generateDocumentSummary(docId):
@@ -9,16 +26,23 @@ def generateDocumentSummary(docId):
         print("Tried extracting text")
         extractedText = extractText(docId)
         if not extractedText:
-            return jsonify({"error": "Document not found", "success": false}), 404
-
+            return (
+                jsonify({"error": "Document not found", "success": false}),
+                404,
+            )
         print("Size of extractedText is", len(extractedText))
-        finalSummary = getSummary(extractedText)
+
+        if USE_GEMINI_FILE_SEARCH:
+            finalSummary = initializeSearchStoreAndGetSummary(extractedText, docId)
+        else:
+            finalSummary = getSummary(extractedText)
+
         # print(finalSummary)
         return (
             jsonify(
                 {
                     "summary": finalSummary,
-                    "message": "Summarized using Bart",
+                    "message": "Summarized using GEMINI",
                     "success": True,
                 }
             ),
@@ -54,7 +78,10 @@ def generateAnswers(docId):
 
         extractedText = " ".join(extractedText)
 
-        answer = getAnswers(question, extractedText)
+        if USE_GEMINI_FILE_SEARCH:
+            answer = getAnswersUsingStore(question, extractedText, docId)
+        else:
+            answer = getAnswers(question, extractedText)
 
         return (
             jsonify(
@@ -72,10 +99,10 @@ def generateAnswers(docId):
         return (
             jsonify(
                 {
-                    docId: docId,
-                    question: question,
-                    success: False,
-                    error: "Internal Server Error",
+                    "docId": docId,
+                    "question": question,
+                    "success": False,
+                    "error": "Internal Server Error",
                 },
             ),
             500,
@@ -96,7 +123,7 @@ def generateTextSummary():
             jsonify(
                 {
                     "summary": summary,
-                    "message": "Summarized using Bart",
+                    "message": "Summarized using GEMINI",
                     "success": True,
                 }
             ),

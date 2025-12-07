@@ -14,7 +14,7 @@ services:
   researchub-ai-engine:
     build:
       context: ./researchub-ai-engine
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     restart: on-failure
     ports:
@@ -33,7 +33,7 @@ services:
   researchub-server:
     build:
       context: ./researchub-server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     restart: on-failure
     ports:
@@ -52,7 +52,7 @@ services:
   researchub-client:
     build:
       context: ./researchub-client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file: .env
     restart: on-failure
     ports:

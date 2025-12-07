@@ -7,6 +7,7 @@ from controllers.DocumentController import (
     generateDocumentSummary_HF,
     generateAnswers_HF,
     generateTextSummary_HF,
+    getServerHealth,
 )
 from dotenv import load_dotenv
 
@@ -53,3 +54,4 @@ def routeGenerateTextSummaryCall():
 documentBlueprint.route("/<docId>", methods=["GET"])(routeGenerateSummaryCall)
 documentBlueprint.route("/<docId>/qna", methods=["POST"])(routeGenerateAnswersCall)
 documentBlueprint.route("/text", methods=["GET"])(routeGenerateTextSummaryCall)
+documentBlueprint.route("/health", methods=["GET"])(getServerHealth)
