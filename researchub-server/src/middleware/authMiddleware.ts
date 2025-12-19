@@ -1,22 +1,14 @@
-import dotenv from "dotenv";
 import { Request, Response, NextFunction } from "express";
-
-dotenv.config();
-
-const AUTH_TOKEN = process.env.REACT_APP_SECRET_AUTH_TOKEN || "mysecret123";
 
 export const isAuthenticated = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const authHeaders = req.headers["authorization"];
-  const token = authHeaders?.split(" ")[1];
-
-  if (token && token === AUTH_TOKEN) {
+  if (req.session.user) {
     return next();
   }
-  return res.status(403).json({
+  return res.status(401).json({
     message: "Authentication Failed",
   });
 };

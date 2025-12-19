@@ -7,7 +7,7 @@ import {
 //NOTE, max. document size could be upto 16MB hence,
 // 1MB chunking is implemented in the content
 //"The maximum BSON document size is 16 mebibytes."
-// - https://www.mongodb.com/docs/manual/core/document/
+// - https://www.mongodb.com/docs/manual/core/document/#document-size-limit
 
 export interface IDocument extends Document {
   _id: Types.ObjectId;
@@ -45,6 +45,6 @@ documentSchema.statics.chunkContent = function (text: string) {
 documentSchema.index({ content: 1, uploadedAt: -1 });
 
 export const DocumentModel = model<IDocument, IDocumentModel>(
-  "Document",
+  "DOCUMENTS",
   documentSchema
 );

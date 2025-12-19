@@ -7,6 +7,8 @@ const router = Router();
 
 const upload = multer({ dest: "uploads/" });
 
+router.get("/health", (_, res) => res.json({ serverIsLive: true }));
+
 router.use(isAuthenticated);
 
 //TODO, implement zod validations later on in backend
