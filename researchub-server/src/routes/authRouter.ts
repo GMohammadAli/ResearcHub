@@ -16,5 +16,6 @@ router.post(
   controller.loginUser
 );
 router.post("/logout", controller.logoutUser);
+router.get("/session", controller.checkSession);
 
 export default router;

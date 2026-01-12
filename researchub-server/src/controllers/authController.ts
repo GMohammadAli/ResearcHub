@@ -67,7 +67,7 @@ const loginUser = async (req: Request, res: Response) => {
     const user = await getUser({ username, email });
     if (!user) {
       return res.status(400).json({
-        messages: "Incorrect password or username",
+        message: "Incorrect password or username",
       });
     }
 
@@ -78,11 +78,14 @@ const loginUser = async (req: Request, res: Response) => {
       });
     }
 
-    req.session.user = { userId: sha256(user._id?.toString()) };
+    //explore this implementation for better auth
+    // req.session.user = { userId: sha256(user._id?.toString()) };
+    req.session.user = { userId: user._id?.toString() };
 
     return res.status(200).json({
       message: "Log In successful",
       data: {
+        userId: user._id,
         username: user.username,
         email: user.email,
         personalDetails: user.personalDetails,
@@ -112,8 +115,43 @@ const logoutUser = async (req: Request, res: Response) => {
   });
 };
 
+const checkSession = async (req: Request, res: Response) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({
+        message: "No active session",
+      });
+    }
+
+    const user = await UserModel.findById(req.session.user.userId).select(
+      "-password"
+    );
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid session",
+      });
+    }
+
+    return res.status(200).json({
+      data: {
+        userId: user._id,
+        username: user.username,
+        email: user.email,
+        personalDetails: user.personalDetails,
+      },
+    });
+  } catch (error) {
+    console.error("Error while checking session : ", error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
+  checkSession,
 };
