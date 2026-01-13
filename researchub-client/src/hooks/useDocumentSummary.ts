@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import ApiService from "../services/ApiService";
 
 interface SummaryResponse {
@@ -18,7 +18,7 @@ export const useDocumentSummary = (docId: string | null) => {
     setSummaryResponse(null);
     try {
       const res = await ApiService.get<SummaryResponse>(
-        `/documents/${id}/summary`
+        `/chat/documents/${id}/summary`
       );
       if (res.status === 200) {
         setSummaryResponse({

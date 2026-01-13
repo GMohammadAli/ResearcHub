@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import ApiService from "../services/ApiService";
 
 interface QueryResponse {
@@ -21,7 +21,7 @@ export const useDocumentQuery = (docId: string | null) => {
       setQueryResponse(null);
       try {
         const res = await ApiService.get<QueryResponse>(
-          `/documents/${docId}/?question=${encodeURIComponent(question)}`
+          `/chat/documents/${docId}/?question=${encodeURIComponent(question)}`
         );
         if (res.status === 200 && res.data?.success) {
           setQueryResponse({

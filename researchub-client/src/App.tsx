@@ -1,28 +1,62 @@
-import "./App.css";
 import {
   BrowserRouter as Router,
-  Navigate,
-  Route,
   Routes,
+  Route,
+  Navigate,
 } from "react-router-dom";
-import UploadFile from "./pages/UploadFile";
-import Chat from "./pages/Chat";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "sonner";
+import UploadFile from "@/pages/UploadFile";
+import Chat from "@/pages/Chat";
+import Home from "./pages/Home";
+import SignUpForm from "./pages/SignUp";
+import LoginForm from "./pages/Login";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import { useAppDispatch } from "./store/hooks";
+import { useEffect } from "react";
+import { checkSessionThunk } from "./store/thunks/authThunk";
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(checkSessionThunk()); // restore session
+  }, [dispatch]);
+
   return (
-    <div className="content-box">
-      <ToastContainer />
+    <>
+      {/* Toast Notifications */}
+      <Toaster richColors position="top-right" />
+
+      {/* Routes */}
       <Router>
         <Routes>
-          <Route path="/chat/:documentId" element={<Chat />} />
-          <Route path="/upload/file" element={<UploadFile />} />
-          <Route path="/" element={<Navigate to="/upload/file" />} />
-          <Route path="*" element={<Navigate to="/upload/file" />} />
+          <Route
+            path="/upload/file"
+            element={
+              <ProtectedRoute>
+                <UploadFile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat/:documentId"
+            element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/chat/home" element={<Home />} />
+
+          <Route path="/auth/sign-up" element={<SignUpForm />} />
+          <Route path="/auth/sign-in" element={<LoginForm />} />
+
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/chat/home" replace />} />
+          <Route path="*" element={<Navigate to="/chat/home" replace />} />
         </Routes>
       </Router>
-    </div>
+    </>
   );
 }
 

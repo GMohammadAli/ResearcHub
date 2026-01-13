@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import ApiService from "../services/ApiService";
 
 export const SUPPORTED_MIME_TYPES = [
@@ -62,7 +62,7 @@ export const useUploadFile = () => {
       const formData = new FormData();
       formData.append("document", file);
       const res = await ApiService.post<UploadResponse>(
-        "/documents/upload",
+        "/chat/documents/upload",
         formData,
         {
           headers: {

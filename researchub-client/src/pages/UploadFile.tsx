@@ -1,4 +1,5 @@
-import { ChangeEvent, DragEvent, useEffect, useState } from "react";
+import type { ChangeEvent, DragEvent } from "react";
+import { useEffect, useState } from "react";
 import {
   SUPPORTED_ACCEPT,
   SUPPORTED_EXTENSIONS,

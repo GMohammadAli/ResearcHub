@@ -211,6 +211,7 @@
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  scrollbar-color: grey white;
 }
 
 .chat-welcome {
@@ -329,6 +330,8 @@
   font-size: 15px;
   outline: none;
   transition: border-color 0.2s;
+  background-color: white;
+  color: black;
 }
 
 .chat-send-button {

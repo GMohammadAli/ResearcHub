@@ -49,3 +49,13 @@ docker compose up --build
 ```bash
 docker compose -f docker-compose.prod.yml up --build
 ```
+
+# When updating docker files
+
+Docker images gets aggressively cached
+first do a no cache build and then run it
+
+```bash
+docker compose build --no-cache
+docker compose up --build
+```
