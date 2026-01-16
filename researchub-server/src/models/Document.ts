@@ -9,11 +9,17 @@ import {
 //"The maximum BSON document size is 16 mebibytes."
 // - https://www.mongodb.com/docs/manual/core/document/#document-size-limit
 
+export interface PDFChunkMetadata {
+  text: string;
+  chunkIndex: number;
+  pages: number[];
+}
 export interface IDocument extends Document {
   _id: Types.ObjectId;
   name: string;
   type: SupportedFileType;
   content: string[]; //extracted text stored in chunks
+  contentWithMetadata: PDFChunkMetadata[];
   uploadedAt: Date;
   sizeInBytes: number;
 }
@@ -26,7 +32,9 @@ export interface IDocumentModel extends Model<IDocument> {
 const documentSchema = new Schema<IDocument, IDocumentModel>({
   name: { type: String, required: true },
   type: { type: String, required: true, enum: SUPPORTED_FILE_TYPES },
+  //disable storing content in later iterations
   content: { type: [String], required: true },
+  contentWithMetadata: { type: [Object], required: true },
   uploadedAt: { type: Date, default: Date.now },
   sizeInBytes: { type: Number },
 });

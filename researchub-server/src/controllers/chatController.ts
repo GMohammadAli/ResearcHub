@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { readDocument, SupportedFileType } from "../services/documentService";
+import {
+  PDFParseResponse,
+  readDocument,
+  SupportedFileType,
+} from "../services/documentService";
 import { DocumentModel } from "../models/Document";
 import ApiService from "../services/apiService";
 
@@ -11,19 +15,23 @@ const uploadFile = async (req: Request, res: Response) => {
       .split(".")
       .pop() as SupportedFileType;
 
-    const text = await readDocument(req.file.path, fileType);
+    const extractedPdfResponse: PDFParseResponse = await readDocument(
+      req.file.path,
+      fileType
+    );
 
-    const contentChunks = DocumentModel.chunkContent(text);
+    const contentChunks = DocumentModel.chunkContent(extractedPdfResponse.text);
 
     const Doc = new DocumentModel({
       name: req.file.originalname,
       type: fileType,
       content: contentChunks,
+      contentWithMetadata: extractedPdfResponse.pages,
       filePath: req.file.path,
-      sizeInBytes: Buffer.byteLength(text, "utf8"),
+      sizeInBytes: Buffer.byteLength(extractedPdfResponse.text, "utf8"),
     });
 
-    console.log({ filename: Doc.name, fileSize: Doc.sizeInBytes });
+    // console.log({ filename: Doc.name, fileSize: Doc.sizeInBytes });
 
     await Doc.save();
 
