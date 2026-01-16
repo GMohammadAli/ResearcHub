@@ -1,5 +1,6 @@
 # reusable document processing functions
 from models.DocumentModel import Document
+import re
 
 
 def extractText(docId):
@@ -45,4 +46,44 @@ def setDocumentMeta(docId, docMetaObject):
 
     except Exception as e:
         print(f"Error while setting document meta with Id {docId}: {e}")
+        return None
+
+
+def extractDataWithChunks(docId):
+    try:
+        document = Document(docId)
+        # print(document)
+        if document is None:
+            print("Document not found")
+            return None
+
+        return document.contentWithMetadata
+    except Exception as e:
+        print(f"Error while fetching document's chunks with Id: {docId}: {e}")
+        return None
+
+
+def mapChunksFromText(responseText: str, chunkStore: list):
+    try:
+        # 1️⃣ Convert list → dict for O(1) lookup
+        lookup = {item["chunkIndex"]: item for item in chunkStore}
+        pattern = re.compile(r"\[CHUNK_(\d+)\]")
+        chunk_ids = set(map(int, pattern.findall(responseText)))
+
+        chunks = []
+
+        for cid in sorted(chunk_ids):
+            if cid in lookup:
+                chunks.append(
+                    {
+                        "chunkIndex": cid,
+                        "pages": chunkStore[cid]["pages"],
+                        "text": chunkStore[cid]["text"],
+                    }
+                )
+
+        return chunks
+
+    except Exception as e:
+        print(f"Error while mapping document's chunks with proper refs: {e}")
         return None

@@ -1,7 +1,17 @@
 # orchestrate requests & call models/services
 from flask import request, jsonify
-from services.DocumentService import extractText, getDocumentMeta
-from services.GeminiService import getSummary, getAnswers
+from services.DocumentService import (
+    extractText,
+    getDocumentMeta,
+    extractDataWithChunks,
+    mapChunksFromText,
+)
+from services.GeminiService import (
+    getSummary,
+    getAnswers,
+    getSummaryWithCitations,
+    getAnswersWithCitations,
+)
 from dotenv import load_dotenv
 
 # Gemini File Store services
@@ -23,25 +33,28 @@ def getServerHealth():
 
 def generateDocumentSummary(docId):
     try:
-        print("Tried extracting text")
+        # print("Tried extracting text")
         extractedText = extractText(docId)
-        if not extractedText:
+        documentChunks = extractDataWithChunks(docId)
+        if not extractedText or not documentChunks:
             return (
                 jsonify({"error": "Document not found", "success": false}),
                 404,
             )
-        print("Size of extractedText is", len(extractedText))
+        # print("Size of extractedText is", len(extractedText))
 
         if USE_GEMINI_FILE_SEARCH:
             finalSummary = initializeSearchStoreAndGetSummary(extractedText, docId)
         else:
-            finalSummary = getSummary(extractedText)
+            finalSummary = getSummaryWithCitations(documentChunks)
+            chunkRefs = mapChunksFromText(finalSummary, documentChunks)
 
         # print(finalSummary)
         return (
             jsonify(
                 {
                     "summary": finalSummary,
+                    "citations": chunkRefs or [],
                     "message": "Summarized using GEMINI",
                     "success": True,
                 }
@@ -69,19 +82,21 @@ def generateAnswers(docId):
         if not question:
             return jsonify({"error": "No question provided", "success": false}), 400
 
-        print("Tried extracting text")
+        # print("Tried extracting text")
         extractedText = extractText(docId)
+        documentChunks = extractDataWithChunks(docId)
         if not extractedText:
             return jsonify({"error": "Document not found", "success": false}), 404
 
-        print("Size of extractedText is", len(extractedText))
+        # print("Size of extractedText is", len(extractedText))
 
         extractedText = " ".join(extractedText)
 
         if USE_GEMINI_FILE_SEARCH:
             answer = getAnswersUsingStore(question, extractedText, docId)
         else:
-            answer = getAnswers(question, extractedText)
+            answer = getAnswersWithCitations(question, documentChunks)
+            chunkRefs = mapChunksFromText(answer, documentChunks)
 
         return (
             jsonify(
@@ -89,6 +104,7 @@ def generateAnswers(docId):
                     "docId": docId,
                     "question": question,
                     "answer": answer,
+                    "citations": chunkRefs or [],
                     "success": True,
                 },
             ),

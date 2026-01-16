@@ -20,6 +20,10 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 
+defaultChunkPrompt = """Reference chunks as [CHUNK_0], [CHUNK_2], etc. 
+IMPORTANT: Only reference chunks using the exact format [CHUNK_X] 
+where X is an integer. Do not invent new chunks."""
+
 
 def getGeneratedContent(prompt):
     """Helper function to generate Gemini response with timeout handling."""
@@ -42,5 +46,15 @@ def getSummary(input):
     return getGeneratedContent(f"{summaryPrompt} {input}")
 
 
+def getSummaryWithCitations(documentChunks):
+    return getGeneratedContent(
+        f"{summaryPrompt} {documentChunks} {defaultChunkPrompt} "
+    )
+
+
 def getAnswers(question, context):
     return getGeneratedContent([context, question])
+
+
+def getAnswersWithCitations(question, documentChunks):
+    return getGeneratedContent(f"{question} {documentChunks} {defaultChunkPrompt}")

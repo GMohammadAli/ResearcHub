@@ -34,6 +34,11 @@ class Document:
         """Returns metaData about the document"""
         return self.data.get("meta", {})
 
+    @property
+    def contentWithMetadata(self) -> list[object]:
+        """Return stored chunked document data"""
+        return self.data.get("contentWithMetadata", [])
+
     def update(self, updateObject: dict):
         """Update the document in MongoDB and refresh local data."""
         documentCollection.update_one(

@@ -36,7 +36,7 @@ summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 
 # Free tier api is very slow and indexing takes time and asynchronous making it impossible to wait
 # for it and then generate the summary so, when generating summary, whole context is passed
-# for qna file search is properly used
+# for qna, file search is properly used
 
 TEMP_DIR = Path("upload")
 TEMP_DIR.mkdir(exist_ok=True)
@@ -103,6 +103,7 @@ def queryStore(store_name: str, question: str, context: str = None):
         contents=question,
         config=types.GenerateContentConfig(
             tools=[
+                # this is a internally managed RAG tool call
                 types.Tool(
                     file_search=types.FileSearch(file_search_store_names=[store_name])
                 )
