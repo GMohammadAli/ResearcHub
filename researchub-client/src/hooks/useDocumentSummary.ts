@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import ApiService from "../services/ApiService";
+import { Citation } from "@/types/citations.types";
 
 interface SummaryResponse {
   success: boolean;
+  citations?: Citation[];
   summary?: string;
   message?: string;
 }
@@ -24,6 +26,7 @@ export const useDocumentSummary = (docId: string | null) => {
         setSummaryResponse({
           success: true,
           summary: res.data?.summary || "",
+          citations: res.data?.citations || [],
           message: res.data?.message || "Summary fetched successfully",
         });
         toast.success("🎉 Your summary is ready!");

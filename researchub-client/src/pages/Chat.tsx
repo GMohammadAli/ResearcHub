@@ -4,12 +4,30 @@ import { useDocumentQuery } from "../hooks/useDocumentQuery";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "../assets/styles/Chat.css";
+import { Badge } from "@/components/ui/badge";
+import ReHypeRaw from "rehype-raw";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+} from "@/components/ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { Citation } from "@/types/citations.types";
 
 interface Message {
   sender: "user" | "bot";
   text: string;
   loading?: boolean;
 }
+
+export const MARKDOWN_MESSAGE_TYPE = {
+  SUMMARY: "SUMMARY",
+  ANSWER: "ANSWER",
+} as const;
+
+export type MarkdownMessageType =
+  (typeof MARKDOWN_MESSAGE_TYPE)[keyof typeof MARKDOWN_MESSAGE_TYPE];
 
 const Chat = () => {
   const { documentId = null } = useParams();
@@ -23,6 +41,10 @@ const Chat = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [showSummary, setShowSummary] = useState(true);
+  const [selectedCitation, setSelectedCitation] = useState<
+    Citation | null | undefined
+  >(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +67,28 @@ const Chat = () => {
 
     askQuestion(userText);
     input.value = "";
+  };
+
+  const addBadgeMarker = (
+    text: string | undefined,
+    textPosition: MarkdownMessageType
+  ) => {
+    return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, (match) => {
+      const ids = [...match.matchAll(/CHUNK_(\d+)/g)].map((m) => m[1]);
+      const uniqueIds = [...new Set(ids)];
+
+      if (textPosition === MARKDOWN_MESSAGE_TYPE.SUMMARY) {
+        if (summaryResponse?.citations?.length !== uniqueIds.length)
+          return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, "");
+      } else if (textPosition === MARKDOWN_MESSAGE_TYPE.ANSWER) {
+        if (queryResponse?.citations?.length !== uniqueIds.length)
+          return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, "");
+      }
+
+      return ids
+        .map((id) => `<citation data-chunk="${id}">${id}</citation>`)
+        .join(" ");
+    });
   };
 
   useEffect(() => {
@@ -185,8 +229,35 @@ const Chat = () => {
               </div>
             ) : (
               <div className="chat-summary-content">
-                <ReactMarkdown>
-                  {summaryResponse?.summary || "No summary available"}
+                <ReactMarkdown
+                  rehypePlugins={[ReHypeRaw]}
+                  components={{
+                    // TODO -> fix this ts error
+                    citation: ({ ...props }) => {
+                      const id = Number(props["data-chunk"]) + 1;
+
+                      const onClickCitation = () => {
+                        const citation: Citation | undefined =
+                          summaryResponse?.citations?.find(
+                            (citation) => citation.chunkIndex === id - 1
+                          );
+                        setSelectedCitation(citation);
+                      };
+                      return (
+                        <Badge
+                          className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-pointer"
+                          onClick={onClickCitation}
+                        >
+                          <div className="w-full flex justify-center">{id}</div>
+                        </Badge>
+                      );
+                    },
+                  }}
+                >
+                  {addBadgeMarker(
+                    summaryResponse?.summary,
+                    MARKDOWN_MESSAGE_TYPE.SUMMARY
+                  ) || "No summary available"}
                 </ReactMarkdown>
               </div>
             ))}
@@ -252,7 +323,35 @@ const Chat = () => {
                     </div>
                   ) : (
                     <div className="chat-markdown">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      <ReactMarkdown
+                        rehypePlugins={[ReHypeRaw]}
+                        components={{
+                          // TODO -> fix this ts error
+                          citation: ({ ...props }) => {
+                            const id = Number(props["data-chunk"]) + 1;
+
+                            const onClickCitation = () => {
+                              const citation: Citation | undefined =
+                                queryResponse?.citations?.find(
+                                  (citation) => citation.chunkIndex === id - 1
+                                );
+                              setSelectedCitation(citation);
+                            };
+                            return (
+                              <Badge
+                                className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-pointer"
+                                onClick={onClickCitation}
+                              >
+                                <div className="w-full flex justify-center">
+                                  {id}
+                                </div>
+                              </Badge>
+                            );
+                          },
+                        }}
+                      >
+                        {addBadgeMarker(msg.text, MARKDOWN_MESSAGE_TYPE.ANSWER)}
+                      </ReactMarkdown>
                     </div>
                   )
                 ) : (
@@ -300,6 +399,58 @@ const Chat = () => {
           </div>
         </div>
       </div>
+
+      {/* Citation Dialog */}
+      <Dialog
+        open={!!selectedCitation}
+        onOpenChange={(open) => !open && setSelectedCitation(null)}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 citation-wrapper">
+          {selectedCitation && (
+            <>
+              {/* Header with gradient */}
+              <div className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-gray-900">
+                    Citation Details
+                  </DialogTitle>
+                  <DialogDescription className="text-sm mt-2 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                      <svg
+                        className="w-3 h-3"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                      </svg>
+                      Pages: {selectedCitation.pages.join(", ")}
+                    </span>
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+
+              {/* Scrollable Content with better styling */}
+              <div className="px-6 py-6 overflow-y-auto flex-1 bg-white selected-citation-text">
+                <div className="prose prose-sm max-w-none">
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-6 rounded-xl shadow-sm">
+                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap m-0">
+                      {selectedCitation.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* TODO Footer with actions and document label */}
+              {/* <div className="px-6 py-4 border-t bg-gray-50 flex justify-end items-center">
+                <div className="text-xs text-gray-500">
+                  Click "Go to Pages" to view in document
+                </div>
+                Add Name of the document here
+              </div> */}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

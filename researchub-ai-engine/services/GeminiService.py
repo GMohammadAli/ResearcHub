@@ -22,7 +22,8 @@ summaryPrompt = "Summarize the following text in 3-4 sentences: \n\n "
 
 defaultChunkPrompt = """Reference chunks as [CHUNK_0], [CHUNK_2], etc. 
 IMPORTANT: Only reference chunks using the exact format [CHUNK_X] 
-where X is an integer. Do not invent new chunks."""
+where X is an integer. Do not invent new chunks.
+IMPORTANT: Try to answer user in 2-3 sentences."""
 
 
 def getGeneratedContent(prompt):

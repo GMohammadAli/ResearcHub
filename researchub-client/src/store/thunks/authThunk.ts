@@ -11,7 +11,7 @@ export const checkSessionThunk = () => async (dispatch: any) => {
 
   try {
     const res = await ApiService.get("/auth/session");
-    console.log({ res });
+    // console.log({ res });
     dispatch(checkSessionSuccess(res.data.data));
   } catch {
     dispatch(checkSessionFailure());

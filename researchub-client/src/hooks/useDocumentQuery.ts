@@ -1,9 +1,11 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import ApiService from "../services/ApiService";
+import { Citation } from "@/types/citations.types";
 
 interface QueryResponse {
   success: boolean;
+  citations?: Citation[];
   answer?: string;
   message?: string;
 }
@@ -26,6 +28,7 @@ export const useDocumentQuery = (docId: string | null) => {
         if (res.status === 200 && res.data?.success) {
           setQueryResponse({
             success: true,
+            citations: res.data?.citations || [],
             answer: res.data?.answer || "",
             message: res.data?.message || "Query fetched successfully",
           });
