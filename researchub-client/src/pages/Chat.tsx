@@ -126,6 +126,42 @@ const Chat = () => {
     }
   }, [queryResponse]);
 
+  const renderMarkdown = (text: string, citations: Citation[] | undefined) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const markdownComponents: any = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      citation: (props: any) => {
+        const id = Number(props["data-chunk"]);
+
+        const onClickCitation = () => {
+          const citation = citations?.find(
+            (c: Citation) => c.chunkIndex === id
+          );
+
+          setSelectedCitation(citation || null);
+        };
+
+        return (
+          <Badge
+            className="inline-flex items-center justify-center h-5 min-w-5 rounded-full px-1 bg-indigo-50 text-indigo-600 border border-indigo-200 font-mono text-xs cursor-pointer"
+            onClick={onClickCitation}
+          >
+            {props.children}
+          </Badge>
+        );
+      },
+    };
+
+    return (
+      <ReactMarkdown
+        rehypePlugins={[ReHypeRaw]}
+        components={markdownComponents}
+      >
+        {text}
+      </ReactMarkdown>
+    );
+  };
+
   return (
     <div className="chat-container">
       {/* Header */}
@@ -229,36 +265,13 @@ const Chat = () => {
               </div>
             ) : (
               <div className="chat-summary-content">
-                <ReactMarkdown
-                  rehypePlugins={[ReHypeRaw]}
-                  components={{
-                    // TODO -> fix this ts error
-                    citation: ({ ...props }) => {
-                      const id = Number(props["data-chunk"]) + 1;
-
-                      const onClickCitation = () => {
-                        const citation: Citation | undefined =
-                          summaryResponse?.citations?.find(
-                            (citation) => citation.chunkIndex === id - 1
-                          );
-                        setSelectedCitation(citation);
-                      };
-                      return (
-                        <Badge
-                          className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-pointer"
-                          onClick={onClickCitation}
-                        >
-                          <div className="w-full flex justify-center">{id}</div>
-                        </Badge>
-                      );
-                    },
-                  }}
-                >
-                  {addBadgeMarker(
+                {renderMarkdown(
+                  addBadgeMarker(
                     summaryResponse?.summary,
                     MARKDOWN_MESSAGE_TYPE.SUMMARY
-                  ) || "No summary available"}
-                </ReactMarkdown>
+                  ) || "No summary available",
+                  summaryResponse?.citations
+                )}
               </div>
             ))}
         </div>
@@ -323,35 +336,13 @@ const Chat = () => {
                     </div>
                   ) : (
                     <div className="chat-markdown">
-                      <ReactMarkdown
-                        rehypePlugins={[ReHypeRaw]}
-                        components={{
-                          // TODO -> fix this ts error
-                          citation: ({ ...props }) => {
-                            const id = Number(props["data-chunk"]) + 1;
-
-                            const onClickCitation = () => {
-                              const citation: Citation | undefined =
-                                queryResponse?.citations?.find(
-                                  (citation) => citation.chunkIndex === id - 1
-                                );
-                              setSelectedCitation(citation);
-                            };
-                            return (
-                              <Badge
-                                className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-pointer"
-                                onClick={onClickCitation}
-                              >
-                                <div className="w-full flex justify-center">
-                                  {id}
-                                </div>
-                              </Badge>
-                            );
-                          },
-                        }}
-                      >
-                        {addBadgeMarker(msg.text, MARKDOWN_MESSAGE_TYPE.ANSWER)}
-                      </ReactMarkdown>
+                      {renderMarkdown(
+                        addBadgeMarker(
+                          msg.text,
+                          MARKDOWN_MESSAGE_TYPE.ANSWER
+                        ) || "No Response",
+                        queryResponse?.citations
+                      )}
                     </div>
                   )
                 ) : (
