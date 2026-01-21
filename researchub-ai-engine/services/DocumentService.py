@@ -67,8 +67,19 @@ def mapChunksFromText(responseText: str, chunkStore: list):
     try:
         # 1️⃣ Convert list → dict for O(1) lookup
         lookup = {item["chunkIndex"]: item for item in chunkStore}
-        pattern = re.compile(r"\[CHUNK_(\d+)\]")
-        chunk_ids = set(map(int, pattern.findall(responseText)))
+        pattern = re.compile(r"\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]")
+        matches = pattern.findall(responseText)
+
+        chunk_ids = set()
+
+        for match in matches:
+            ids = [part.strip() for part in match.split(",")]
+            for cid in ids:
+                match_id = re.match(r"CHUNK_(\d+)", cid)
+                if match_id:
+                    chunk_ids.add(int(match_id.group(1)))
+
+        # print(chunk_ids)
 
         chunks = []
 
@@ -86,4 +97,18 @@ def mapChunksFromText(responseText: str, chunkStore: list):
 
     except Exception as e:
         print(f"Error while mapping document's chunks with proper refs: {e}")
+        return None
+
+
+def getDocumentName(docId):
+    try:
+        document = Document(docId)
+        # print(document)
+        if document is None:
+            print("Document not found")
+            return None
+
+        return document.name
+    except Exception as e:
+        print(f"Error while fetching document name with Id: {docId}: {e}")
         return None

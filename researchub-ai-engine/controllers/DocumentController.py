@@ -5,6 +5,7 @@ from services.DocumentService import (
     getDocumentMeta,
     extractDataWithChunks,
     mapChunksFromText,
+    getDocumentName,
 )
 from services.GeminiService import (
     getSummary,
@@ -34,6 +35,7 @@ def getServerHealth():
 def generateDocumentSummary(docId):
     try:
         # print("Tried extracting text")
+        documentName = getDocumentName(docId)
         extractedText = extractText(docId)
         documentChunks = extractDataWithChunks(docId)
         if not extractedText or not documentChunks:
@@ -55,6 +57,7 @@ def generateDocumentSummary(docId):
                 {
                     "summary": finalSummary,
                     "citations": chunkRefs or [],
+                    "documentName": documentName,
                     "message": "Summarized using GEMINI",
                     "success": True,
                 }
