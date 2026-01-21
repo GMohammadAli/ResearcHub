@@ -5,6 +5,7 @@ import { Citation } from "@/types/citations.types";
 
 interface SummaryResponse {
   success: boolean;
+  documentName?: string;
   citations?: Citation[];
   summary?: string;
   message?: string;
@@ -27,6 +28,7 @@ export const useDocumentSummary = (docId: string | null) => {
           success: true,
           summary: res.data?.summary || "",
           citations: res.data?.citations || [],
+          documentName: res.data?.documentName || "",
           message: res.data?.message || "Summary fetched successfully",
         });
         toast.success("🎉 Your summary is ready!");

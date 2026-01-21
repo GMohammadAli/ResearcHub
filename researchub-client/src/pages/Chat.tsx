@@ -15,6 +15,8 @@ import {
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Citation } from "@/types/citations.types";
 
+const CHUNK_REGEX_PATTERN = /\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g;
+
 interface Message {
   sender: "user" | "bot";
   text: string;
@@ -73,16 +75,17 @@ const Chat = () => {
     text: string | undefined,
     textPosition: MarkdownMessageType
   ) => {
-    return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, (match) => {
+    return text?.replace(CHUNK_REGEX_PATTERN, (match) => {
       const ids = [...match.matchAll(/CHUNK_(\d+)/g)].map((m) => m[1]);
       const uniqueIds = [...new Set(ids)];
 
+      //skips citing the answer or summary when api does not return all citations
       if (textPosition === MARKDOWN_MESSAGE_TYPE.SUMMARY) {
         if (summaryResponse?.citations?.length !== uniqueIds.length)
-          return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, "");
+          return text?.replace(CHUNK_REGEX_PATTERN, "");
       } else if (textPosition === MARKDOWN_MESSAGE_TYPE.ANSWER) {
         if (queryResponse?.citations?.length !== uniqueIds.length)
-          return text?.replace(/\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g, "");
+          return text?.replace(CHUNK_REGEX_PATTERN, "");
       }
 
       return ids
@@ -431,13 +434,13 @@ const Chat = () => {
                 </div>
               </div>
 
-              {/* TODO Footer with actions and document label */}
-              {/* <div className="px-6 py-4 border-t bg-gray-50 flex justify-end items-center">
-                <div className="text-xs text-gray-500">
+              <div className="px-6 py-4 border-t bg-gray-50 flex justify-end items-center text-gray-800">
+                {/* TODO Footer actions to open actual document view */}
+                {/* <div className="text-xs text-gray-500">
                   Click "Go to Pages" to view in document
-                </div>
-                Add Name of the document here
-              </div> */}
+                </div> */}
+                {summaryResponse?.documentName}
+              </div>
             </>
           )}
         </DialogContent>
