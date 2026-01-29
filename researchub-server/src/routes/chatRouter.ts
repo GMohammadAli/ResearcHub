@@ -18,11 +18,16 @@ router.use(isAuthenticated);
 router.post(
   "/documents/upload",
   upload.single("document"),
-  chatController.uploadFile
+  chatController.uploadFile,
 );
 
 router.get("/documents/:docId/summary", chatController.getDocumentSummary);
 
 router.get("/documents/:docId", chatController.getAnswerToQuestions);
+
+router.post(
+  "/documents/:docId/generate-audio-overview",
+  chatController.generateAudioOverviewUrl,
+);
 
 export default router;

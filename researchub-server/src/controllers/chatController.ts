@@ -17,7 +17,7 @@ const uploadFile = async (req: Request, res: Response) => {
 
     const extractedPdfResponse: PDFParseResponse = await readDocument(
       req.file.path,
-      fileType
+      fileType,
     );
 
     const contentChunks = DocumentModel.chunkContent(extractedPdfResponse.text);
@@ -59,7 +59,7 @@ const getDocumentSummary = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(
       `Error while fetching document summary for docId: ${docId}`,
-      error.response?.data?.message || error?.response || error
+      error.response?.data?.message || error?.response || error,
     );
     res.status(500).json({
       error: "Proxy Error",
@@ -83,14 +83,35 @@ const getAnswerToQuestions = async (req: Request, res: Response) => {
 
   try {
     const response = await ApiService.post(
-      `/summarize/${docId}/qna?question=${question}`
+      `/summarize/${docId}/qna?question=${question}`,
     );
     res.status(response.data.status || 200).json(response.data);
   } catch (error: any) {
     console.error(
       `Error while fetching answer for question: ${question}`,
-      error
+      error,
     );
+    res.status(500).json({
+      error: "Proxy error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
+const generateAudioOverviewUrl = async (req: Request, res: Response) => {
+  const { docId } = req.params;
+  if (!docId || typeof docId !== "string")
+    return res.status(400).json({
+      message: "Bad Request",
+    });
+
+  try {
+    const response = await ApiService.post(
+      `/summarize/${docId}/generate-audio`,
+    );
+    res.status(response.data.status || 200).json(response.data);
+  } catch (error: any) {
+    console.error(`Error while fetching audio overview url : ${docId}`, error);
     res.status(500).json({
       error: "Proxy error",
       details: error.response?.data?.error || error,
@@ -102,4 +123,5 @@ export default {
   uploadFile,
   getDocumentSummary,
   getAnswerToQuestions,
+  generateAudioOverviewUrl,
 };
