@@ -6,12 +6,14 @@ from services.DocumentService import (
     extractDataWithChunks,
     mapChunksFromText,
     getDocumentName,
+    setGeneratedAudioUrl,
 )
 from services.GeminiService import (
     getSummary,
     getAnswers,
     getSummaryWithCitations,
     getAnswersWithCitations,
+    getFiveMinuteSummary,
 )
 from dotenv import load_dotenv
 
@@ -20,6 +22,8 @@ from services.GeminiFileStoreService import (
     initializeSearchStoreAndGetSummary,
     getAnswersUsingStore,
 )
+
+from services.AudioService import generateAndUploadAudioOverview
 
 load_dotenv()
 
@@ -50,14 +54,17 @@ def generateDocumentSummary(docId):
         else:
             finalSummary = getSummaryWithCitations(documentChunks)
             chunkRefs = mapChunksFromText(finalSummary, documentChunks)
+            documentMeta = getDocumentMeta(docId)
 
         # print(finalSummary)
+        # print(documentMeta)
         return (
             jsonify(
                 {
                     "summary": finalSummary,
                     "citations": chunkRefs or [],
                     "documentName": documentName,
+                    "audioOverviewUrl": documentMeta.get("generatedAudioUrl") or None,
                     "message": "Summarized using GEMINI",
                     "success": True,
                 }
@@ -154,6 +161,60 @@ def generateTextSummary():
             jsonify(
                 {
                     "summary": None,
+                    "message": "Internal Server Error",
+                    "success": False,
+                }
+            ),
+            500,
+        )
+
+
+def generateAudioOverview(docId):
+    try:
+        documentMeta = getDocumentMeta(docId)
+        existingAudioUrl = documentMeta.get("generatedAudioUrl")
+
+        if existingAudioUrl:
+            print("Returning existing uploaded audio overview url")
+            return (
+                jsonify(
+                    {
+                        "audioOverviewSecureUrl": existingAudioUrl,
+                        "message": "Returning existing audio overview url",
+                        "success": True,
+                    }
+                ),
+                200,
+            )
+
+        extractedText = extractText(docId)
+        audioOverviewSummary = getFiveMinuteSummary(extractedText)
+        # print(f"audioOverviewSummary {audioOverviewSummary}")
+        generatedAudioOverviewUrl = generateAndUploadAudioOverview(
+            audioOverviewSummary, getDocumentName(docId)
+        )
+
+        setGeneratedAudioUrl(docId, generatedAudioOverviewUrl)
+
+        return (
+            jsonify(
+                {
+                    "audioOverviewSecureUrl": generatedAudioOverviewUrl,
+                    "message": "Successfully generated Audio Overview",
+                    "success": True,
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        print(
+            f"Error while generating audio overview for document with id {docId} :{e}"
+        )
+        return (
+            jsonify(
+                {
+                    "audioOverviewSecureUrl": None,
                     "message": "Internal Server Error",
                     "success": False,
                 }

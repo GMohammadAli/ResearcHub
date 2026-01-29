@@ -24,6 +24,7 @@ defaultChunkPrompt = """Reference chunks as [CHUNK_0], [CHUNK_2], etc.
 IMPORTANT: Only reference chunks using the exact format [CHUNK_X] 
 where X is an integer. Do not invent new chunks.
 IMPORTANT: Try to answer user in 2-3 sentences."""
+minCharactersPrompt = "IMPORTANT: Summary must be under 4,500 characters."
 
 
 def getGeneratedContent(prompt):
@@ -43,19 +44,29 @@ def getGeneratedContent(prompt):
         return f"Gemini service error: {str(e)}"
 
 
-def getSummary(input):
+def getSummary(input: str) -> str:
     return getGeneratedContent(f"{summaryPrompt} {input}")
 
 
-def getSummaryWithCitations(documentChunks):
+def getSummaryWithCitations(documentChunks) -> str:
     return getGeneratedContent(
         f"{summaryPrompt} {documentChunks} {defaultChunkPrompt} "
     )
 
 
-def getAnswers(question, context):
+def getAnswers(question: str, context: str) -> str:
     return getGeneratedContent([context, question])
 
 
-def getAnswersWithCitations(question, documentChunks):
+def getAnswersWithCitations(question: str, documentChunks) -> str:
     return getGeneratedContent(f"{question} {documentChunks} {defaultChunkPrompt}")
+
+
+def getFiveMinuteSummary(text: str, max_retries: int = 6) -> str:
+    for _ in range(max_retries):
+        summary = getGeneratedContent(f"{summaryPrompt}{text}\n{minCharactersPrompt}")
+        if len(summary) <= 4500:
+            return summary
+
+    # TODO: add NLP for meaningful summary reduction
+    return summary[:4500]

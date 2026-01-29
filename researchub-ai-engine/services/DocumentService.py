@@ -112,3 +112,20 @@ def getDocumentName(docId):
     except Exception as e:
         print(f"Error while fetching document name with Id: {docId}: {e}")
         return None
+
+
+def setGeneratedAudioUrl(docId, audioUrl):
+    try:
+        document = Document(docId)
+
+        if document is None:
+            print("Document not found")
+            return None
+
+        document.update({"meta.generatedAudioUrl": audioUrl})
+
+        return document.meta
+
+    except Exception as e:
+        print(f"Error while setting document generatedAudioUrl with Id {docId}: {e}")
+        return None
