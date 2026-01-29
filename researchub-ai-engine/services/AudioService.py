@@ -1,5 +1,4 @@
 # audio service related functions
-from config.GoogleTextToSpeechClient import initializeTTSClient
 from google.cloud import texttospeech
 import cloudinary.uploader
 from datetime import datetime
