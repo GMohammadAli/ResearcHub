@@ -2,10 +2,11 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #f8fafc;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 /* Header */
@@ -80,6 +81,58 @@
   height: 18px;
 }
 
+.chat-wrapper {
+  display: flex;
+  min-height: 88vh;
+
+  .sidebar-heading {
+    color: #1a202c;
+    position: relative;
+    font-size: 18px;
+    top: -3rem;
+  }
+
+  .sidebar-button {
+    width: 32px;
+    height: 32px;
+    background: #f0f4ff;
+    color: #667eea;
+    cursor: pointer;
+    border-radius: 8px;
+    border-color: white;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    align-self: flex-end;
+    z-index: 1;
+  }
+
+  .sidebar-button-2 {
+    background: #f0f4ff;
+    color: #667eea;
+    cursor: pointer;
+    border-radius: 8px;
+    border-color: white;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+}
+
+.sidebar-wrapper {
+  margin: 0 auto;
+  margin-right: 0rem;
+  margin-block: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
 /* Main */
 .chat-main {
   flex: 1;
@@ -91,6 +144,7 @@
   padding: 24px;
   gap: 20px;
   overflow: hidden;
+  margin-left: 0rem;
 }
 
 /* Summary Card */
@@ -154,6 +208,10 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+.chat-toggle-button:focus {
+  border: none;
 }
 
 .chat-chevron {

@@ -9,6 +9,7 @@ interface SummaryResponse {
   citations?: Citation[];
   summary?: string;
   message?: string;
+  audioOverviewUrl?: string | null;
 }
 
 export const useDocumentSummary = (docId: string | null) => {
@@ -21,7 +22,7 @@ export const useDocumentSummary = (docId: string | null) => {
     setSummaryResponse(null);
     try {
       const res = await ApiService.get<SummaryResponse>(
-        `/chat/documents/${id}/summary`
+        `/chat/documents/${id}/summary`,
       );
       if (res.status === 200) {
         setSummaryResponse({
@@ -30,6 +31,7 @@ export const useDocumentSummary = (docId: string | null) => {
           citations: res.data?.citations || [],
           documentName: res.data?.documentName || "",
           message: res.data?.message || "Summary fetched successfully",
+          audioOverviewUrl: res.data?.audioOverviewUrl || null,
         });
         toast.success("🎉 Your summary is ready!");
       } else {
