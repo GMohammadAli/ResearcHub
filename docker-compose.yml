@@ -37,9 +37,10 @@ services:
       - "5000:5000"
     volumes:
       - ./researchub-server:/src/usr/researchub-server
-    # we are mounting the local directory to reflect live changes - not working
-    # before ":" is the host machine path
-    # after ":" is the container WORKDIR path
+      # we are mounting the local directory to reflect live changes - not working
+      # before ":" is the host machine path
+      # after ":" is the container WORKDIR path
+      - /src/usr/researchub-server/node_modules
     networks:
       - researchub-network
     depends_on:
@@ -55,9 +56,10 @@ services:
       - "3000:3000"
     volumes:
       - ./researchub-client:/src/usr/researchub-client
-    # we are mounting the local directory to reflect live changes - not working
-    # before ":" is the host machine path
-    # after ":" is the container WORKDIR path
+      # we are mounting the local directory to reflect live changes - not working
+      # before ":" is the host machine path
+      # after ":" is the container WORKDIR path
+      - /src/usr/researchub-client/node_modules
     networks:
       - researchub-network
     depends_on:

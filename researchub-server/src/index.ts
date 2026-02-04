@@ -15,11 +15,19 @@ const PORT = process.env.SERVER_PORT ?? 1025;
 const MONGO_DB_URL =
   process.env.MONGO_DB_URL ??
   "mongodb://localhost:27017/ai-document-summarizer";
+const CLIENT_APP_URL = process.env.VITE_API_URL ?? "http://localhost:3000";
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_APP_URL,
+    credentials: true, // Allow cookies/credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(sessionMiddleware);
 
 // GITHUB Actions CRON implemented

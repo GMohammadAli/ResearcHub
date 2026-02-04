@@ -1,5 +1,5 @@
-# 1. Base node v20 image
-FROM node:20-alpine
+# 1. Base node v20.11.1 image
+FROM node:20.11.1-slim
 
 # 2. Setting working directory in container
 WORKDIR /src/usr/researchub-client

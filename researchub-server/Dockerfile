@@ -1,5 +1,5 @@
 # 1. Base Image
-FROM node:20-alpine
+FROM node:20.11.1-slim
 
 # 2. Working directory
 WORKDIR /src/usr/researchub-server
