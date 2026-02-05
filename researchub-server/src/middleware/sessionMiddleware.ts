@@ -23,9 +23,8 @@ export const sessionMiddleware = session({
 
   cookie: {
     httpOnly: true,
-    secure: false,
     maxAge: 1000 * 60 * 60 * 24, //cookie expires after a day
-    // secure: true, //to be enabled in prod
-    // sameSite: "strict",
+    secure: true,
+    sameSite: "none",
   },
 });
