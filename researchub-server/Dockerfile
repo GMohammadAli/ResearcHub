@@ -13,8 +13,11 @@ RUN npm install
 # 5. Copy all the source code
 COPY . .
 
-# 6. Expose the server port
+# 6. Build the app (IMPORTANT: compile here)
+RUN npm run build
+
+# 7. Expose the server port
 EXPOSE 5000
 
-# 7. Run the app
+# 8. Run the app
 CMD ["npm","run","prod"]
