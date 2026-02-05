@@ -19,6 +19,10 @@ const CLIENT_APP_URL = process.env.CLIENT_APP_URL ?? "http://localhost:3000";
 
 const app = express();
 
+/* REQUIRED FOR RENDER + SECURE COOKIES */
+// Because prod server is running on Render behind a proxy, Express does not detect HTTPS correctly.
+app.set("trust proxy", 1);
+
 app.use(express.json());
 app.use(
   cors({
