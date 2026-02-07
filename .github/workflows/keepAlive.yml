@@ -2,7 +2,7 @@ name: Keep Render Services Alive
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # every 10 minutes
+    - cron: "*/5 * * * *"   # every 5 minutes
   workflow_dispatch:         # allow manual run
 
 jobs:
@@ -14,12 +14,12 @@ jobs:
       AI_ENGINE_URL: ${{ secrets.AI_ENGINE_URL }}
 
     steps:
-      - name: Ping Server
+      - name: Ping researchub-server
         run: |
-          echo "Pinging researchub-server..."
-          curl -s $SERVER_URL
+          echo "Checking status researchub-server..."
+          curl -fsS --max-time 10 "$SERVER_URL/chat/health" || echo "❌ researchub-server health check failed"
 
-      - name: Ping AI Engine
+      - name: Ping researchub-ai-engine
         run: |
-          echo "Pinging researchub-ai-engine..."
-          curl -s $AI_ENGINE_URL
+          echo "Checking status researchub-ai-engine..."
+          curl -fsS --max-time 10 "$AI_ENGINE_URL/summarize/health" || echo "❌ researchub-ai-engine health check failed"
