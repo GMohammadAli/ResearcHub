@@ -86,19 +86,25 @@ const Chat = () => {
   ) => {
     return text?.replace(CHUNK_REGEX_PATTERN, (match) => {
       const ids = [...match.matchAll(/CHUNK_(\d+)/g)].map((m) => m[1]);
-      const uniqueIds = [...new Set(ids)];
 
-      //skips citing the answer or summary when api does not return all citations
-      if (textPosition === MARKDOWN_MESSAGE_TYPE.SUMMARY) {
-        if (summaryResponse?.citations?.length !== uniqueIds.length)
-          return text?.replace(CHUNK_REGEX_PATTERN, "");
-      } else if (textPosition === MARKDOWN_MESSAGE_TYPE.ANSWER) {
-        if (queryResponse?.citations?.length !== uniqueIds.length)
-          return text?.replace(CHUNK_REGEX_PATTERN, "");
+      //filtering out citations whose chunk is not available
+      const apiCitationIds =
+        textPosition === MARKDOWN_MESSAGE_TYPE.SUMMARY
+          ? new Set(
+              summaryResponse?.citations?.map((c) => String(c.chunkIndex)),
+            )
+          : new Set(queryResponse?.citations?.map((c) => String(c.chunkIndex)));
+
+      const validIds = ids.filter((id) => apiCitationIds.has(id));
+
+      if (validIds.length === 0) {
+        return "";
       }
 
-      return ids
-        .map((id) => `<citation data-chunk="${id}">${id}</citation>`)
+      return validIds
+        .map(
+          (id) => `<citation data-chunk="${id}">${Number(id) + 1}</citation>`,
+        )
         .join(" ");
     });
   };
