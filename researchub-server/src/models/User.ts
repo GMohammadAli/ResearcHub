@@ -15,7 +15,9 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true },
     personalDetails: { type: mongoose.Schema.Types.Mixed },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
+
+userSchema.index({ email: 1, createdAt: -1 });
 
 export const UserModel = model<IUser>("USERS", userSchema);

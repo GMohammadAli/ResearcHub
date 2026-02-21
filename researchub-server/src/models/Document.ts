@@ -16,11 +16,13 @@ export interface PDFChunkMetadata {
 }
 export interface IDocument extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   name: string;
   type: SupportedFileType;
   content: string[]; //extracted text stored in chunks
   contentWithMetadata: PDFChunkMetadata[];
-  uploadedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
   sizeInBytes: number;
 }
 
@@ -29,15 +31,25 @@ export interface IDocumentModel extends Model<IDocument> {
   chunkContent(text: string): string[];
 }
 
-const documentSchema = new Schema<IDocument, IDocumentModel>({
-  name: { type: String, required: true },
-  type: { type: String, required: true, enum: SUPPORTED_FILE_TYPES },
-  //disable storing content in later iterations
-  content: { type: [String], required: true },
-  contentWithMetadata: { type: [Object], required: true },
-  uploadedAt: { type: Date, default: Date.now },
-  sizeInBytes: { type: Number },
-});
+const documentSchema = new Schema<IDocument, IDocumentModel>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "USERS",
+      required: true,
+      index: true,
+    },
+    name: { type: String, required: true },
+    type: { type: String, required: true, enum: SUPPORTED_FILE_TYPES },
+    //disable storing content in later iterations
+    content: { type: [String], required: true },
+    contentWithMetadata: { type: [Object], required: true },
+    sizeInBytes: { type: Number },
+  },
+  {
+    timestamps: true, // Automatically handles createdAt & updatedAt
+  },
+);
 
 //schema.statics.methodName, allows you to define static methods on a model.
 documentSchema.statics.chunkContent = function (text: string) {
@@ -50,9 +62,9 @@ documentSchema.statics.chunkContent = function (text: string) {
   return chunks;
 };
 
-documentSchema.index({ content: 1, uploadedAt: -1 });
+documentSchema.index({ content: 1, createdAt: -1 });
 
 export const DocumentModel = model<IDocument, IDocumentModel>(
   "DOCUMENTS",
-  documentSchema
+  documentSchema,
 );
