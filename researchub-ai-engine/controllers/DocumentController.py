@@ -204,7 +204,7 @@ def generateAudioOverview(docId):
                     "success": True,
                 }
             ),
-            200,
+            201,
         )
 
     except Exception as e:

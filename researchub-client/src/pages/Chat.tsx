@@ -1,7 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useDocumentSummary } from "../hooks/useDocumentSummary";
-import { useDocumentQuery } from "../hooks/useDocumentQuery";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "../assets/styles/Chat.css";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +15,8 @@ import { Citation } from "@/types/citations.types";
 import { Headphones, Menu, X } from "lucide-react";
 import { useAudioOverview } from "@/hooks/useAudioOverview";
 import { CustomAudioPlayer } from "@/components/custom/CustomAudioPlayer";
+import { useDocumentSession } from "@/hooks/useDocumentSession";
+import { useSessionQnA } from "@/hooks/useSessionQnA";
 
 const CHUNK_REGEX_PATTERN = /\[(CHUNK_\d+(?:\s*,\s*CHUNK_\d+)*)\]/g;
 
@@ -24,6 +24,7 @@ interface Message {
   sender: "user" | "bot";
   text: string;
   loading?: boolean;
+  citations: Citation[];
 }
 
 export const MARKDOWN_MESSAGE_TYPE = {
@@ -40,9 +41,14 @@ const Chat = () => {
 
   if (!documentId) navigate("/");
 
-  const { summaryResponse, loading: documentSummaryLoader } =
-    useDocumentSummary(documentId);
-  const { queryResponse, askQuestion } = useDocumentQuery(documentId);
+  const {
+    loading: documentSessionFetchLoader,
+    summaryDetails,
+    session: summaryFetchedSession,
+  } = useDocumentSession(documentId);
+
+  const { session: qnASession, askQuestion } = useSessionQnA();
+
   const {
     audioUrl,
     loading: generateAudioOverviewLoader,
@@ -50,11 +56,11 @@ const Chat = () => {
   } = useAudioOverview();
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [showSummary, setShowSummary] = useState(true);
+  const [showSummary, setShowSummary] = useState<boolean>(true);
   const [selectedCitation, setSelectedCitation] = useState<
     Citation | null | undefined
   >(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -72,28 +78,23 @@ const Chat = () => {
 
     setMessages((prev) => [
       ...prev,
-      { sender: "user", text: userText },
-      { sender: "bot", text: "", loading: true },
+      { sender: "user", text: userText, citations: [] },
+      { sender: "bot", text: "", loading: true, citations: [] },
     ]);
 
-    askQuestion(userText);
+    if (summaryFetchedSession?._id)
+      askQuestion(summaryFetchedSession?._id, userText);
     input.value = "";
   };
 
-  const addBadgeMarker = (
-    text: string | undefined,
-    textPosition: MarkdownMessageType,
-  ) => {
+  const addBadgeMarker = (text: string | undefined, citations: Citation[]) => {
     return text?.replace(CHUNK_REGEX_PATTERN, (match) => {
       const ids = [...match.matchAll(/CHUNK_(\d+)/g)].map((m) => m[1]);
 
       //filtering out citations whose chunk is not available
-      const apiCitationIds =
-        textPosition === MARKDOWN_MESSAGE_TYPE.SUMMARY
-          ? new Set(
-              summaryResponse?.citations?.map((c) => String(c.chunkIndex)),
-            )
-          : new Set(queryResponse?.citations?.map((c) => String(c.chunkIndex)));
+      const apiCitationIds = new Set(
+        citations?.map((c) => String(c.chunkIndex)),
+      );
 
       const validIds = ids.filter((id) => apiCitationIds.has(id));
 
@@ -109,9 +110,14 @@ const Chat = () => {
     });
   };
 
-  const handleGenerateAudioOverview = async () => {
+  const handleGenerateAudioOverview = useCallback(async () => {
+    if (!documentId) return;
     await generateAudio(documentId);
-  };
+  }, [documentId, generateAudio]);
+
+  useEffect(() => {
+    handleGenerateAudioOverview();
+  }, [documentId, handleGenerateAudioOverview]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -126,27 +132,20 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (queryResponse?.success) {
-      setMessages((prev) => {
-        const updated = [...prev];
-        const lastIndex = updated.findIndex(
-          (m) => m.sender === "bot" && m.loading,
-        );
+    const updatedSession = qnASession || summaryFetchedSession;
+    if (!updatedSession?.messages) return;
 
-        if (lastIndex !== -1) {
-          updated[lastIndex] = {
-            sender: "bot",
-            text: `${queryResponse?.answer}`,
-            loading: false,
-          };
-        } else {
-          updated.push({ sender: "bot", text: `${queryResponse?.answer}` });
-        }
+    const formattedMessages: Message[] = updatedSession.messages
+      .filter((msg) => !msg.isSummary)
+      .map((msg) => ({
+        sender: msg.role === "agent" ? "bot" : "user",
+        text: msg.content,
+        loading: false,
+        citations: msg.citations,
+      }));
 
-        return updated;
-      });
-    }
-  }, [queryResponse]);
+    setMessages(formattedMessages);
+  }, [qnASession, summaryFetchedSession]);
 
   const renderMarkdown = (text: string, citations: Citation[] | undefined) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -251,10 +250,8 @@ const Chat = () => {
                 <h2 className="text-sm font-medium tracking-wide mb-2 sidebar-heading">
                   Tools
                 </h2>
-                {summaryResponse?.audioOverviewUrl || audioUrl ? (
-                  <CustomAudioPlayer
-                    audioUrl={summaryResponse?.audioOverviewUrl || audioUrl}
-                  />
+                {audioUrl ? (
+                  <CustomAudioPlayer audioUrl={audioUrl} />
                 ) : generateAudioOverviewLoader ? (
                   <div className="chat-summary-loader">
                     <div className="chat-summary-spinner" />
@@ -323,7 +320,7 @@ const Chat = () => {
               </button>
             </div>
             {showSummary &&
-              (documentSummaryLoader ? (
+              (documentSessionFetchLoader ? (
                 <div className="chat-summary-loader">
                   <div className="chat-summary-spinner" />
                   <p className="chat-summary-loading-text">
@@ -334,10 +331,10 @@ const Chat = () => {
                 <div className="chat-summary-content">
                   {renderMarkdown(
                     addBadgeMarker(
-                      summaryResponse?.summary,
-                      MARKDOWN_MESSAGE_TYPE.SUMMARY,
+                      summaryDetails?.summary,
+                      summaryDetails?.citations || [],
                     ) || "No summary available",
-                    summaryResponse?.citations,
+                    summaryDetails?.citations,
                   )}
                 </div>
               ))}
@@ -406,11 +403,9 @@ const Chat = () => {
                     ) : (
                       <div className="chat-markdown">
                         {renderMarkdown(
-                          addBadgeMarker(
-                            msg.text,
-                            MARKDOWN_MESSAGE_TYPE.ANSWER,
-                          ) || "No Response",
-                          queryResponse?.citations,
+                          addBadgeMarker(msg.text, msg.citations) ||
+                            "No Response",
+                          msg?.citations,
                         )}
                       </div>
                     )
@@ -506,7 +501,7 @@ const Chat = () => {
                 {/* <div className="text-xs text-gray-500">
                   Click "Go to Pages" to view in document
                 </div> */}
-                {summaryResponse?.documentName}
+                {summaryDetails?.documentName}
               </div>
             </>
           )}

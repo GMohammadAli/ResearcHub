@@ -23,9 +23,9 @@ export const useAudioOverview = () => {
         `/chat/documents/${docId}/generate-audio-overview`,
       );
 
-      if (res.status === 200 && res.data?.success) {
+      if ([200, 201].includes(res.status) && res.data?.success) {
         setAudioUrl(res.data.audioOverviewSecureUrl || null);
-        toast.success("🔊 Audio overview is ready!");
+        if (res.status === 201) toast.success("🔊 Audio overview is ready!");
       } else {
         toast.error(res.data?.message || "Failed to generate audio overview.");
       }
