@@ -1,3 +1,8 @@
+/**
+ * @deprecated
+ * This hook is deprecated.
+ * Replaced by `useDocumentSession`.
+ */
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import ApiService from "../services/ApiService";

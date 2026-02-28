@@ -26,12 +26,20 @@ router.post(
   chatController.uploadFile,
 );
 
+/**
+ * @deprecated
+ * This route is deprecated.
+ */
 router.get(
   "/documents/:docId/summary",
   validate(docIdParamsSchema, "params"),
   chatController.getDocumentSummary,
 );
 
+/**
+ * @deprecated
+ * This route is deprecated.
+ */
 router.get(
   "/documents/:docId",
   validate(docIdParamsSchema, "params"),

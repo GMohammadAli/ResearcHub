@@ -1,3 +1,8 @@
+/**
+ * @deprecated
+ * This hook is deprecated.
+ * Replaced by `useSessionQnA`.
+ */
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import ApiService from "../services/ApiService";
@@ -12,7 +17,7 @@ interface QueryResponse {
 
 export const useDocumentQuery = (docId: string | null) => {
   const [queryResponse, setQueryResponse] = useState<QueryResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -23,7 +28,7 @@ export const useDocumentQuery = (docId: string | null) => {
       setQueryResponse(null);
       try {
         const res = await ApiService.get<QueryResponse>(
-          `/chat/documents/${docId}/?question=${encodeURIComponent(question)}`
+          `/chat/documents/${docId}/?question=${encodeURIComponent(question)}`,
         );
         if (res.status === 200 && res.data?.success) {
           setQueryResponse({
@@ -39,7 +44,7 @@ export const useDocumentQuery = (docId: string | null) => {
       } catch (error) {
         console.error(
           `Error fetching Query for ${docId} question: ${question}`,
-          error
+          error,
         );
         setQueryResponse({ success: false });
         toast.error("Error while fetching answer.");
@@ -47,7 +52,7 @@ export const useDocumentQuery = (docId: string | null) => {
         setLoading(false);
       }
     },
-    [docId]
+    [docId],
   );
 
   return {
