@@ -217,9 +217,14 @@ const sessionQnA = async (req: Request, res: Response) => {
   const { sessionId } = req.params;
   const questionRaw = req.query?.question;
 
-  // ✅ validate question properly
-  if (!questionRaw || typeof questionRaw !== "string") {
-    return res.status(400).json({ message: "Invalid question" });
+  // ✅ validate question and sessionId properly (ts build fails here)
+  if (
+    !sessionId ||
+    typeof sessionId !== "string" ||
+    !questionRaw ||
+    typeof questionRaw !== "string"
+  ) {
+    return res.status(400).json({ message: "Invalid question or sessionId" });
   }
   try {
     const existingSession = await getSession({ sessionId });
