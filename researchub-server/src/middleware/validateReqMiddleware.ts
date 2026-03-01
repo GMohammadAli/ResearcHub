@@ -13,7 +13,7 @@ const validate = (
         errors: result.error,
       });
     }
-    if (source != "query") req[source] = result.data;
+    req[source] = result.data;
 
     next();
   };

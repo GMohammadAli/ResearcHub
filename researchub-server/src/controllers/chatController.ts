@@ -215,7 +215,7 @@ const initializeOrGetExistingChat = async (req: Request, res: Response) => {
 
 const sessionQnA = async (req: Request, res: Response) => {
   const { sessionId } = req.params;
-  const { question } = req.query;
+  const { question } = req.query as { question: string };
   try {
     const existingSession = await getSession({ sessionId });
     if (!existingSession) {
@@ -227,7 +227,7 @@ const sessionQnA = async (req: Request, res: Response) => {
 
     existingSession.messages.push({
       role: MessageRole.USER,
-      content: typeof question === "string" ? question : "",
+      content: question,
       citations: [],
     });
 
