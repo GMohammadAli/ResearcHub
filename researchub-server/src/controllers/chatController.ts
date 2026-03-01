@@ -85,7 +85,7 @@ const uploadFile = async (req: Request, res: Response) => {
 };
 
 const getDocumentSummary = async (req: Request, res: Response) => {
-  const { docId } = req.params;
+  const { docId } = req.validated?.params;
   if (!docId)
     return res.status(400).json({
       message: "Bad Request",
@@ -107,8 +107,8 @@ const getDocumentSummary = async (req: Request, res: Response) => {
 };
 
 const getAnswerToQuestions = async (req: Request, res: Response) => {
-  const { docId } = req.params;
-  const { question } = req.query;
+  const { docId } = req.validated?.params;
+  const { question } = req.validated?.query;
   if (
     !docId ||
     typeof docId !== "string" ||
@@ -137,7 +137,7 @@ const getAnswerToQuestions = async (req: Request, res: Response) => {
 };
 
 const generateAudioOverviewUrl = async (req: Request, res: Response) => {
-  const { docId } = req.params;
+  const { docId } = req.validated?.params;
   if (!docId || typeof docId !== "string")
     return res.status(400).json({
       message: "Missing docId",
@@ -158,11 +158,8 @@ const generateAudioOverviewUrl = async (req: Request, res: Response) => {
 };
 
 const initializeOrGetExistingChat = async (req: Request, res: Response) => {
-  const { docId } = req.params;
+  const { docId } = req.validated?.params;
   const userId = req.session.user?.userId || "";
-  if (!docId || typeof docId !== "string") {
-    return res.status(400).json({ message: "Invalid docId" });
-  }
   try {
     const existingSession = await getSession({ docId, userId });
     if (existingSession) {
@@ -217,18 +214,9 @@ const initializeOrGetExistingChat = async (req: Request, res: Response) => {
 };
 
 const sessionQnA = async (req: Request, res: Response) => {
-  const { sessionId } = req.params;
-  const questionRaw = req.query?.question;
+  const { sessionId } = req.validated?.params;
+  const { question } = req.validated?.query;
 
-  // ✅ validate question and sessionId properly (ts build fails here)
-  if (
-    !sessionId ||
-    typeof sessionId !== "string" ||
-    !questionRaw ||
-    typeof questionRaw !== "string"
-  ) {
-    return res.status(400).json({ message: "Invalid question or sessionId" });
-  }
   try {
     const existingSession = await getSession({ sessionId });
     if (!existingSession) {
@@ -240,14 +228,14 @@ const sessionQnA = async (req: Request, res: Response) => {
 
     existingSession.messages.push({
       role: MessageRole.USER,
-      content: questionRaw,
+      content: question,
       citations: [],
     });
 
     const docId = existingSession.docId;
 
     const response = await ApiService.post(
-      `/summarize/${docId}/qna?question=${questionRaw}`,
+      `/summarize/${docId}/qna?question=${question}`,
     );
     if (response.data.success) {
       existingSession.messages.push({
@@ -267,7 +255,7 @@ const sessionQnA = async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     console.error(
-      `Error while fetching answer to a new question  (${questionRaw}) for an existing chat with id: ${sessionId}`,
+      `Error while fetching answer to a new question  (${question}) for an existing chat with id: ${sessionId}`,
       error,
     );
     res.status(502).json({

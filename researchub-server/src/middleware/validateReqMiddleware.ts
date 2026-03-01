@@ -13,7 +13,10 @@ const validate = (
         errors: result.error,
       });
     }
-    req[source] = result.data;
+
+    // Attach validated data safely
+    if (!req.validated) req.validated = {};
+    req.validated[source] = result.data;
 
     next();
   };
