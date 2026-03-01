@@ -160,6 +160,9 @@ const generateAudioOverviewUrl = async (req: Request, res: Response) => {
 const initializeOrGetExistingChat = async (req: Request, res: Response) => {
   const { docId } = req.params;
   const userId = req.session.user?.userId || "";
+  if (!docId || typeof docId !== "string") {
+    return res.status(400).json({ message: "Invalid docId" });
+  }
   try {
     const existingSession = await getSession({ docId, userId });
     if (existingSession) {
