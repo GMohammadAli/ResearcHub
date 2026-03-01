@@ -215,7 +215,12 @@ const initializeOrGetExistingChat = async (req: Request, res: Response) => {
 
 const sessionQnA = async (req: Request, res: Response) => {
   const { sessionId } = req.params;
-  const { question } = req.query as { question: string };
+  const questionRaw = req.query?.question;
+
+  // ✅ validate question properly
+  if (!questionRaw || typeof questionRaw !== "string") {
+    return res.status(400).json({ message: "Invalid question" });
+  }
   try {
     const existingSession = await getSession({ sessionId });
     if (!existingSession) {
@@ -227,14 +232,14 @@ const sessionQnA = async (req: Request, res: Response) => {
 
     existingSession.messages.push({
       role: MessageRole.USER,
-      content: question,
+      content: questionRaw,
       citations: [],
     });
 
     const docId = existingSession.docId;
 
     const response = await ApiService.post(
-      `/summarize/${docId}/qna?question=${question}`,
+      `/summarize/${docId}/qna?question=${questionRaw}`,
     );
     if (response.data.success) {
       existingSession.messages.push({
@@ -254,7 +259,7 @@ const sessionQnA = async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     console.error(
-      `Error while fetching answer to a new question  (${question}) for an existing chat with id: ${sessionId}`,
+      `Error while fetching answer to a new question  (${questionRaw}) for an existing chat with id: ${sessionId}`,
       error,
     );
     res.status(502).json({
