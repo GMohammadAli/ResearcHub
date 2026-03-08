@@ -7,6 +7,7 @@ import {
   docIdParamsSchema,
   questionQuerySchema,
   sessionIdSchema,
+  updateChatTitleSchema,
 } from "../validations/chatValidations";
 
 const router = Router();
@@ -43,6 +44,7 @@ router.get(
 router.get(
   "/documents/:docId",
   validate(docIdParamsSchema, "params"),
+  validate(questionQuerySchema, "query"),
   chatController.getAnswerToQuestions,
 );
 
@@ -58,11 +60,26 @@ router.post(
   chatController.initializeOrGetExistingChat,
 );
 
+router.get("/sessions", chatController.getAllUserChats);
+
 router.post(
   "/sessions/:sessionId/messages",
   validate(sessionIdSchema, "params"),
   validate(questionQuerySchema, "query"),
   chatController.sessionQnA,
+);
+
+router.put(
+  "/sessions/:sessionId/update-title",
+  validate(sessionIdSchema, "params"),
+  validate(updateChatTitleSchema, "body"),
+  chatController.updateChatTitle,
+);
+
+router.delete(
+  "/sessions/:sessionId",
+  validate(sessionIdSchema, "params"),
+  chatController.deleteChat,
 );
 
 export default router;

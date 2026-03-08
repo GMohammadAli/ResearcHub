@@ -7,7 +7,12 @@ import {
 } from "../services/documentService";
 import { DocumentModel } from "../models/Document";
 import ApiService from "../services/apiService";
-import { ChatSessionModel, MessageRole } from "../models/ChatSession";
+import {
+  ChatSessionModel,
+  IChatSession,
+  isActive,
+  MessageRole,
+} from "../models/ChatSession";
 
 const getSession = async ({
   docId,
@@ -19,7 +24,7 @@ const getSession = async ({
   sessionId?: string;
 }) => {
   try {
-    const query: any = {};
+    const query: any = { isActive: isActive.Y };
 
     if (docId) query.docId = docId;
     if (userId) query.userId = userId;
@@ -37,6 +42,20 @@ const getDocument = async ({ docId }: { docId: string }) => {
     return document;
   } catch (error) {
     console.error("Error while fetching document from db: ", error);
+  }
+};
+
+const getSessions = async ({ userId }: { userId?: string }) => {
+  try {
+    const query: any = { isActive: isActive.Y };
+    if (userId) query.userId = userId;
+
+    return await ChatSessionModel.find(query);
+  } catch (error) {
+    console.error(
+      `Error while fetching chat sessions from db for user (${userId}): `,
+      error,
+    );
   }
 };
 
@@ -181,6 +200,7 @@ const initializeOrGetExistingChat = async (req: Request, res: Response) => {
       docId: docId,
       title: documentDetails.name,
       messages: [],
+      isActive: isActive.Y,
     });
 
     const summaryResp = await ApiService.get(`/summarize/${docId}`);
@@ -265,6 +285,99 @@ const sessionQnA = async (req: Request, res: Response) => {
   }
 };
 
+const getAllUserChats = async (req: Request, res: Response) => {
+  const userId = req.session.user?.userId || "";
+  try {
+    const sessions: IChatSession[] | undefined = await getSessions({ userId });
+    if (!sessions) {
+      return res.status(404).json({
+        message: "User has no active sessions/chats",
+        data: null,
+      });
+    }
+    return res.status(200).json({
+      message: "User Sessions Found",
+      data: {
+        sessions,
+        totalSessions: Object.keys(sessions).length,
+      },
+    });
+  } catch (error: any) {
+    console.error(
+      `Error while fetching all session created by user with userId : ${userId}`,
+      error,
+    );
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
+const deleteChat = async (req: Request, res: Response) => {
+  const { sessionId } = req.validated?.params;
+  const userId = req.session.user?.userId || "";
+  try {
+    const existingSession = await getSession({ sessionId, userId });
+    if (!existingSession) {
+      return res.status(404).json({
+        message: "Session not found/User not authorized",
+        data: null,
+      });
+    }
+
+    existingSession.isActive = isActive.N;
+
+    await existingSession.save();
+
+    return res.status(200).json({
+      message: "Session deleted successfully",
+    });
+  } catch (error: any) {
+    console.error(
+      `Error while deleting a session with sessionId : ${sessionId}`,
+      error,
+    );
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
+const updateChatTitle = async (req: Request, res: Response) => {
+  const { sessionId } = req.validated?.params;
+  const userId = req.session.user?.userId || "";
+  const { title: newTitle } = req.validated?.body;
+  try {
+    const existingSession = await getSession({ sessionId, userId });
+    if (!existingSession) {
+      return res.status(404).json({
+        message: "Session not found/User not authorized",
+        data: null,
+      });
+    }
+
+    existingSession.title = newTitle;
+
+    await existingSession.save();
+
+    return res.status(200).json({
+      message: "Session title updated successfully",
+      data: existingSession.toObject(),
+    });
+  } catch (error: any) {
+    console.error(
+      `Error while updating session title with sessionId : ${sessionId}`,
+      error,
+    );
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.response?.data?.error || error,
+    });
+  }
+};
+
 export default {
   uploadFile,
   getDocumentSummary,
@@ -272,4 +385,7 @@ export default {
   generateAudioOverviewUrl,
   initializeOrGetExistingChat,
   sessionQnA,
+  getAllUserChats,
+  updateChatTitle,
+  deleteChat,
 };

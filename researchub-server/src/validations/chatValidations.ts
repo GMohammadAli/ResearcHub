@@ -11,3 +11,7 @@ export const sessionIdSchema = z.object({
 export const questionQuerySchema = z.object({
   question: z.string().min(1, "question is mandatory"),
 });
+
+export const updateChatTitleSchema = z.object({
+  title: z.string().min(1, "New Title to update is required"),
+});

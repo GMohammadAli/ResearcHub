@@ -11,6 +11,12 @@ export enum MessageRole {
   AGENT = "agent",
 }
 
+//used for soft delete
+export enum isActive {
+  Y = "Y",
+  N = "N",
+}
+
 export interface Message {
   role: MessageRole;
   content: string;
@@ -26,6 +32,7 @@ export interface IChatSession extends Document {
   messages: Message[];
   messageCount: number;
   tokensUtilized: number;
+  isActive: isActive;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +55,7 @@ const chatSessionSchema = new Schema<IChatSession>(
     messages: { type: [Object], required: true },
     messageCount: { type: Number, default: 0 },
     tokensUtilized: { type: Number, default: 0 },
+    isActive: { type: String, required: true, default: isActive.Y },
   },
   {
     timestamps: true,
