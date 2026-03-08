@@ -20,14 +20,13 @@ const getSession = async ({
   sessionId,
 }: {
   docId?: string;
-  userId?: string;
+  userId: string;
   sessionId?: string;
 }) => {
   try {
-    const query: any = { isActive: isActive.Y };
+    const query: any = { userId: userId, isActive: isActive.Y };
 
     if (docId) query.docId = docId;
-    if (userId) query.userId = userId;
     if (sessionId) query._id = sessionId;
 
     return await ChatSessionModel.findOne(query);
@@ -45,10 +44,9 @@ const getDocument = async ({ docId }: { docId: string }) => {
   }
 };
 
-const getSessions = async ({ userId }: { userId?: string }) => {
+const getSessions = async ({ userId }: { userId: string }) => {
   try {
-    const query: any = { isActive: isActive.Y };
-    if (userId) query.userId = userId;
+    const query: any = { userId: userId, isActive: isActive.Y };
 
     return await ChatSessionModel.find(query);
   } catch (error) {
@@ -60,6 +58,7 @@ const getSessions = async ({ userId }: { userId?: string }) => {
 };
 
 const uploadFile = async (req: Request, res: Response) => {
+  const userId = req.session.user?.userId || "";
   try {
     if (!req.file) return res.status(400).send("No file uploaded.");
 
@@ -79,7 +78,7 @@ const uploadFile = async (req: Request, res: Response) => {
     const contentChunks = DocumentModel.chunkContent(extractedPdfResponse.text);
 
     const Doc = new DocumentModel({
-      userId: req.session.user?.userId,
+      userId: userId,
       name: req.file.originalname,
       type: fileType,
       content: contentChunks,
@@ -236,12 +235,13 @@ const initializeOrGetExistingChat = async (req: Request, res: Response) => {
 const sessionQnA = async (req: Request, res: Response) => {
   const { sessionId } = req.validated?.params;
   const { question } = req.validated?.query;
+  const userId = req.session.user?.userId || "";
 
   try {
-    const existingSession = await getSession({ sessionId });
+    const existingSession = await getSession({ sessionId, userId });
     if (!existingSession) {
       return res.status(404).json({
-        message: "Session not found",
+        message: "Session not found/ User not authorized",
         data: null,
       });
     }
@@ -321,7 +321,7 @@ const deleteChat = async (req: Request, res: Response) => {
     const existingSession = await getSession({ sessionId, userId });
     if (!existingSession) {
       return res.status(404).json({
-        message: "Session not found/User not authorized",
+        message: "Session not found/ User not authorized",
         data: null,
       });
     }
@@ -353,7 +353,7 @@ const updateChatTitle = async (req: Request, res: Response) => {
     const existingSession = await getSession({ sessionId, userId });
     if (!existingSession) {
       return res.status(404).json({
-        message: "Session not found/User not authorized",
+        message: "Session not found/ User not authorized",
         data: null,
       });
     }
