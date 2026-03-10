@@ -7,6 +7,7 @@ from services.DocumentService import (
     mapChunksFromText,
     getDocumentName,
     setGeneratedAudioUrl,
+    getHistoryByDocId
 )
 from services.GeminiService import (
     getSummary,
@@ -14,6 +15,7 @@ from services.GeminiService import (
     getSummaryWithCitations,
     getAnswersWithCitations,
     getFiveMinuteSummary,
+    getAnswersWithHistory
 )
 from dotenv import load_dotenv
 
@@ -105,7 +107,8 @@ def generateAnswers(docId):
         if USE_GEMINI_FILE_SEARCH:
             answer = getAnswersUsingStore(question, extractedText, docId)
         else:
-            answer = getAnswersWithCitations(question, documentChunks)
+            history = getHistoryByDocId(docId)
+            answer = getAnswersWithHistory(question, documentChunks, history)
             chunkRefs = mapChunksFromText(answer, documentChunks)
 
         return (

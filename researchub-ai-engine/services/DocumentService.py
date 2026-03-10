@@ -1,5 +1,6 @@
 # reusable document processing functions
 from models.DocumentModel import Document
+from models.SessionModel import Session
 import re
 
 
@@ -128,4 +129,18 @@ def setGeneratedAudioUrl(docId, audioUrl):
 
     except Exception as e:
         print(f"Error while setting document generatedAudioUrl with Id {docId}: {e}")
+        return None
+
+def getHistoryByDocId(docId, n: int = 10):
+    try:
+        sessions = Session.getByDocId(docId)
+
+        if not sessions:
+            print("No sessions found for document")
+            return None
+
+        return [message for session in sessions for message in session.lastNMessages(n)]
+
+    except Exception as e:
+        print(f"Error while fetching history with docId: {docId}: {e}")
         return None

@@ -25,6 +25,16 @@ IMPORTANT: Only reference chunks using the exact format [CHUNK_X]
 where X is an integer. Do not invent new chunks.
 IMPORTANT: Try to answer user in 2-3 sentences."""
 minCharactersPrompt = "IMPORTANT: Summary must be under 4,500 characters."
+condensePrompt = """Given the conversation history and the follow-up question, 
+rewrite the follow-up into a standalone question that captures all context.
+
+<Chat History>
+{chat_history}
+
+<Follow Up>
+{question}
+
+<Standalone Question>"""
 
 
 def getGeneratedContent(prompt):
@@ -70,3 +80,15 @@ def getFiveMinuteSummary(text: str, max_retries: int = 6) -> str:
 
     # TODO: add NLP for meaningful summary reduction
     return summary[:4500]
+
+# https://developers.llamaindex.ai/python/examples/chat_engine/chat_engine_condense_question/
+def condenseQuestion(question: str, history: list) -> str:
+    formatted = "\n".join([f"{m['role']}: {m['content']}" for m in history])
+    return getGeneratedContent(condensePrompt.format(
+        chat_history=formatted, 
+        question=question
+    ))
+
+def getAnswersWithHistory(question: str, documentChunks, history: list) -> str:
+    standalone = condenseQuestion(question, history)
+    return getAnswersWithCitations(standalone, documentChunks)
